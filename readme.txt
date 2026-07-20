@@ -5,7 +5,7 @@ Tags: mcp, ai, claude, rest-api, woocommerce
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 1.1.5
+Stable tag: 1.1.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,10 @@ Yes. HTTPS is required for OAuth redirects and for Claude to trust the connector
 
 == Changelog ==
 
+= 1.1.6 =
+* Fixed: the MCP endpoint's auth check now reads the JSON-RPC method via the request's already-parsed body instead of re-reading the raw input stream, so the initialize-handshake bypass added in 1.1.5 reliably detects the method instead of silently failing to on some server configurations.
+* Changed: the internal auth log now also records the HTTP method (GET/POST/OPTIONS/etc.) of every request, to help diagnose clients that arrive without a body or without credentials.
+
 = 1.1.5 =
 * Changed: the MCP endpoint no longer requires authentication for the `initialize` and `notifications/initialized` JSON-RPC methods, so clients can complete the protocol handshake before a token is available. All other methods (including `tools/list` and `tools/call`) still require authentication as before.
 
@@ -99,6 +103,9 @@ Yes. HTTPS is required for OAuth redirects and for Claude to trust the connector
 * Full internationalization support (wp-mcp-server text domain, .pot translation template)
 
 == Upgrade Notice ==
+
+= 1.1.6 =
+Makes the initialize-handshake auth bypass (1.1.5) reliable and adds HTTP method to the internal auth log.
 
 = 1.1.5 =
 The MCP protocol handshake (initialize / notifications/initialized) no longer requires a token; all other methods still do.

@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.1.6]
+
+### Fixed
+- `check_permission()` now reads the JSON-RPC method via `$request->get_json_params()` instead of a second, independent `file_get_contents('php://input')` call. WordPress's REST server already reads and caches the raw body internally, and re-reading `php://input` a second time is not guaranteed to work on every SAPI/hosting configuration — using the already-parsed body makes the 1.1.5 initialize-handshake bypass reliable everywhere.
+
+### Changed
+- The `[MCP Auth]` log entry is now emitted for every request (not just non-bypassed ones) and includes `http_method` (`$request->get_method()`) alongside `rpc_method`, `bypassed`, `header`, and `result` — needed to diagnose clients (e.g. ChatGPT) that arrive without auth and without a body.
+
 ## [1.1.5]
 
 ### Changed
