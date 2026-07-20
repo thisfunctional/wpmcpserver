@@ -3,7 +3,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 class WP_MCP_OAuth_Server {
 
-    private const CODE_TTL = 600; // 10 minutes
+    private const CODE_TTL  = 600;  // 10 minutes
+    private const TOKEN_TTL = 3600; // 1 hour
     private const NONCE_ACTION = 'wp_mcp_oauth_authorize';
 
     public function init(): void {
@@ -261,9 +262,9 @@ class WP_MCP_OAuth_Server {
             return new WP_REST_Response( [ 'error' => 'invalid_grant', 'error_description' => __( 'Invalid PKCE.', 'wp-mcp-server' ) ], 400 );
         }
 
-        $access_token = wp_generate_password( 40, false );
-        $tokens       = get_option( 'wp_mcp_oauth_tokens', [] );
-        $tokens[]     = $access_token;
+        $access_token             = wp_generate_password( 40, false );
+        $tokens                   = get_option( 'wp_mcp_oauth_tokens', [] );
+        $tokens[ $access_token ]  = time() + self::TOKEN_TTL;
         update_option( 'wp_mcp_oauth_tokens', $tokens );
 
         WP_MCP_Logger::log( '[MCP OAuth Token] success', [
@@ -273,7 +274,8 @@ class WP_MCP_OAuth_Server {
 
         return new WP_REST_Response( [
             'access_token' => $access_token,
-            'token_type'   => 'bearer',
+            'token_type'   => 'Bearer',
+            'expires_in'   => self::TOKEN_TTL,
         ], 200 );
     }
 }

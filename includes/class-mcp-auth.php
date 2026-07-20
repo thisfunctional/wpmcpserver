@@ -16,9 +16,9 @@ class WP_MCP_Auth {
             $token = substr( $auth, 7 );
             // check first whether it's an API key
             if ( hash_equals( $api_key, $token ) ) return true;
-            // then check whether it's an OAuth token
+            // then check whether it's a non-expired OAuth token
             $tokens = get_option( 'wp_mcp_oauth_tokens', [] );
-            return in_array( $token, $tokens, true );
+            return isset( $tokens[ $token ] ) && $tokens[ $token ] > time();
         }
 
         // X-API-Key: <key>

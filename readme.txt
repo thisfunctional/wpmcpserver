@@ -5,7 +5,7 @@ Tags: mcp, ai, claude, rest-api, woocommerce
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,11 @@ Yes. HTTPS is required for OAuth redirects and for Claude to trust the connector
 
 == Changelog ==
 
+= 1.1.4 =
+* Fixed: the "Clear logs" button left a blank page at admin-post.php instead of redirecting back to the settings page. The action hook was only being registered on admin_menu, which never fires for admin-post.php requests; it's now registered unconditionally at plugin bootstrap. The redirect query param is now `cleared` instead of `logs_cleared`.
+* Fixed: OAuth token responses now return `token_type: "Bearer"` (capitalized) and a new `expires_in: 3600` field; issued access tokens now actually expire after 1 hour (previously they never expired) and expiry is enforced on every authenticated request.
+* Fixed: 401 responses from the MCP endpoint now reliably include a `WWW-Authenticate: Bearer realm="WordPress MCP Server"` header (previously set via a raw header() call that could be sent before the real response object was finalized), so OAuth clients like ChatGPT know to retry with a Bearer token.
+
 = 1.1.3 =
 * Added diagnostic logging around OAuth token issuance: a log entry on successful token issuance (client_id, token prefix) and a log entry when the client_id-from-authorization-code fallback is used, to confirm that path is exercised as expected.
 
@@ -91,6 +96,9 @@ Yes. HTTPS is required for OAuth redirects and for Claude to trust the connector
 * Full internationalization support (wp-mcp-server text domain, .pot translation template)
 
 == Upgrade Notice ==
+
+= 1.1.4 =
+Fixes the Clear logs button, adds real OAuth token expiry (1 hour), and ensures the WWW-Authenticate header is always sent on 401 responses.
 
 = 1.1.3 =
 Adds diagnostic logging for OAuth token issuance and the client_id fallback path (requires debug logging enabled).

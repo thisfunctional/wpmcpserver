@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.1.4]
+
+### Fixed
+- The "Clear logs" button on the settings page left a blank page at `admin-post.php` instead of redirecting back. `add_action('admin_post_wp_mcp_clear_logs', ...)` was registered inside a method only ever called from the `admin_menu` hook, which never fires on `admin-post.php` requests — so the handler was never actually attached. It's now registered unconditionally at plugin bootstrap. The success redirect's query arg is now `cleared` (was `logs_cleared`).
+- OAuth token responses now return `token_type: "Bearer"` (was lowercase `"bearer"`) and a new `expires_in: 3600` field. Access tokens are now stored with an actual expiry timestamp (`wp_mcp_oauth_tokens` changed from a flat list of token strings to a `token => expires_at` map) and `WP_MCP_Auth::verify()` rejects expired tokens — previously issued tokens never expired at all.
+- 401 responses from the MCP request endpoint now reliably carry a `WWW-Authenticate: Bearer realm="WordPress MCP Server"` header. The header was previously set via a raw `header()` call inside `check_permission()`, which runs before the actual `WP_REST_Response` object exists; it's now attached via the `rest_post_dispatch` filter, which is the mechanism WordPress guarantees will reach the client.
+
 ## [1.1.3]
 
 ### Added

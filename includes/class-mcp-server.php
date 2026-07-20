@@ -32,6 +32,8 @@ class WP_MCP_Server {
             'callback'            => [ $this, 'handle_request' ],
             'permission_callback' => [ $this, 'check_permission' ],
         ] );
+
+        add_filter( 'rest_post_dispatch', [ $this, 'add_www_authenticate_header' ], 10, 3 );
     }
 
     public function check_permission( WP_REST_Request $request ): bool|WP_Error {
@@ -45,8 +47,28 @@ class WP_MCP_Server {
 
         if ( $verified ) return true;
 
-        header( 'WWW-Authenticate: Bearer realm="' . rest_url( 'mcp/v1' ) . '", error="invalid_token"' );
         return new WP_Error( 'rest_forbidden', __( 'Authentication required', 'wp-mcp-server' ), [ 'status' => 401 ] );
+    }
+
+    /**
+     * Guarantees 401 responses from our endpoint carry a WWW-Authenticate header,
+     * so OAuth clients (e.g. ChatGPT) know to retry the request with a Bearer token.
+     *
+     * A raw header() call inside check_permission() isn't reliable here: WP_REST_Server
+     * only actually emits the headers stored on the WP_REST_Response object (via
+     * send_headers()), which happens well after permission_callback runs — so setting
+     * the header on the response itself, via rest_post_dispatch, is the mechanism WP
+     * guarantees will reach the client.
+     */
+    public function add_www_authenticate_header( $response, $server, $request ) {
+        if ( $response instanceof WP_REST_Response
+            && 401 === $response->get_status()
+            && '/mcp/v1/request' === $request->get_route()
+        ) {
+            $response->header( 'WWW-Authenticate', 'Bearer realm="WordPress MCP Server"' );
+        }
+
+        return $response;
     }
 
     public function handle_request( WP_REST_Request $request ): WP_REST_Response {

@@ -11,8 +11,6 @@ class WP_MCP_Admin_Settings {
             'wp-mcp-server',
             [ $this, 'render_page' ]
         );
-
-        add_action( 'admin_post_wp_mcp_clear_logs', [ $this, 'handle_clear_logs' ] );
     }
 
     public function handle_clear_logs(): void {
@@ -25,7 +23,7 @@ class WP_MCP_Admin_Settings {
         WP_MCP_Logger::clear();
 
         wp_safe_redirect( add_query_arg(
-            [ 'page' => 'wp-mcp-server', 'logs_cleared' => '1' ],
+            [ 'page' => 'wp-mcp-server', 'cleared' => '1' ],
             admin_url( 'options-general.php' )
         ) );
         exit;
@@ -46,7 +44,7 @@ class WP_MCP_Admin_Settings {
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Settings saved.', 'wp-mcp-server' ) . '</p></div>';
         }
 
-        if ( isset( $_GET['logs_cleared'] ) ) {
+        if ( isset( $_GET['cleared'] ) ) {
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Logs cleared.', 'wp-mcp-server' ) . '</p></div>';
         }
 
