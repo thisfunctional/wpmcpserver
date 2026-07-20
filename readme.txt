@@ -5,7 +5,7 @@ Tags: mcp, ai, claude, rest-api, woocommerce
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 1.1.7
+Stable tag: 1.1.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,12 @@ Yes. HTTPS is required for OAuth redirects and for Claude to trust the connector
 
 == Changelog ==
 
+= 1.1.8 =
+* Reverted: the unauthenticated auth bypass for `initialize`/`notifications/initialized` (introduced in 1.1.5) has been removed — every JSON-RPC method on the MCP endpoint now requires authentication again, with no exceptions.
+* Reverted: the temporary `[MCP Headers Debug]` full-header dump on auth failure (1.1.7) has been removed.
+* Reverted: the `[MCP Auth]` log entry is back to its original simple shape (`header`, `result`), dropping the `http_method`/`rpc_method`/`bypassed` fields added during the ChatGPT debugging work.
+* All other OAuth/logging fixes from 1.1.1–1.1.4 (Basic Auth client credentials, client_id-from-code fallback, token expiry, the WWW-Authenticate header, and the Clear logs fix) are unaffected and remain in place.
+
 = 1.1.7 =
 * Added: temporary diagnostic logging that dumps every HTTP request header when authentication fails, to help identify exactly what unauthenticated MCP clients (e.g. ChatGPT) are sending. Only logs on auth failure, so normal request logs stay unaffected.
 
@@ -106,6 +112,9 @@ Yes. HTTPS is required for OAuth redirects and for Claude to trust the connector
 * Full internationalization support (wp-mcp-server text domain, .pot translation template)
 
 == Upgrade Notice ==
+
+= 1.1.8 =
+Reverts the initialize-handshake auth bypass and ChatGPT debug logging (1.1.5-1.1.7) — authentication is required on every method again.
 
 = 1.1.7 =
 Adds temporary header-dump diagnostics on auth failure to help debug unauthenticated MCP client requests.

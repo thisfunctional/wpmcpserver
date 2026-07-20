@@ -3,7 +3,7 @@
  * Plugin Name:       WP MCP Server
  * Plugin URI:        https://thisfunctional.pt
  * Description:       Turns WordPress into an MCP server for AI assistants like Claude.
- * Version:           1.1.7
+ * Version:           1.1.8
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * Author:            this.functional
@@ -16,7 +16,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'WP_MCP_VERSION', '1.1.7' );
+define( 'WP_MCP_VERSION', '1.1.8' );
 define( 'WP_MCP_DIR', plugin_dir_path( __FILE__ ) );
 
 require_once WP_MCP_DIR . 'includes/class-mcp-logger.php';

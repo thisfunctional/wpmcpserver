@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.1.8]
+
+### Reverted
+- Removed the unauthenticated bypass for `initialize`/`notifications/initialized` introduced in 1.1.5 — `check_permission()` now enforces authentication on every JSON-RPC method again, no exceptions.
+- Removed the temporary `[MCP Headers Debug]` full-header dump on auth failure added in 1.1.7.
+- `[MCP Auth]` log entries are back to their original shape (`header`, `result`), dropping the `http_method`/`rpc_method`/`bypassed` fields added in 1.1.5/1.1.6.
+
+Everything else from the ChatGPT compatibility work (1.1.1-1.1.4) — the OAuth Basic Auth client-credentials fallback, the client_id-from-authorization-code fallback, real token expiry, the `WWW-Authenticate` header on 401s, and the Clear Logs button fix — is unaffected and remains in place, since none of those are ChatGPT-specific hacks (they're spec-compliant fallbacks that only activate when the primary source is empty).
+
 ## [1.1.7]
 
 ### Added
