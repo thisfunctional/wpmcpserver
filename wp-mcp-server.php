@@ -32,7 +32,7 @@ add_action( 'init', function () {
         header( 'Content-Type: application/json' );
         echo wp_json_encode( [
             'issuer'                           => home_url(),
-            'authorization_endpoint'           => rest_url( 'mcp/v1/oauth/authorize' ),
+            'authorization_endpoint'           => home_url( '/authorize' ),
             'token_endpoint'                   => rest_url( 'mcp/v1/oauth/token' ),
             'registration_endpoint'            => rest_url( 'mcp/v1/oauth/register' ),
             'response_types_supported'         => [ 'code' ],
