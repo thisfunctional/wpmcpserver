@@ -36,7 +36,7 @@ class WP_MCP_Module_WP_Core {
         $router->register_tool(
             'list_post_types',
             __( 'Lists all public post types available on this site.', 'wp-mcp-server' ),
-            [ 'type' => 'object', 'properties' => [] ],
+            [ 'type' => 'object', 'properties' => new stdClass() ],
             [ $this, 'list_post_types' ]
         );
 
@@ -55,7 +55,7 @@ class WP_MCP_Module_WP_Core {
         $router->register_tool(
             'get_site_info',
             __( 'Returns basic information about this WordPress site.', 'wp-mcp-server' ),
-            [ 'type' => 'object', 'properties' => [] ],
+            [ 'type' => 'object', 'properties' => new stdClass() ],
             [ $this, 'get_site_info' ]
         );
     }

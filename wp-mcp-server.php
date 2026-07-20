@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       WP MCP Server
  * Description:       Turns WordPress into an MCP server for AI assistants like Claude.
- * Version:           0.1.3
+ * Version:           0.1.4
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * License:           GPL v2 or later
@@ -12,7 +12,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'WP_MCP_VERSION', '0.1.3' );
+define( 'WP_MCP_VERSION', '0.1.4' );
 define( 'WP_MCP_DIR', plugin_dir_path( __FILE__ ) );
 
 require_once WP_MCP_DIR . 'includes/class-mcp-auth.php';

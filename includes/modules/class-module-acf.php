@@ -28,7 +28,7 @@ class WP_MCP_Module_ACF {
         $router->register_tool(
             'acf_list_field_groups',
             __( 'Lists all ACF field groups and their associated post types.', 'wp-mcp-server' ),
-            [ 'type' => 'object', 'properties' => [] ],
+            [ 'type' => 'object', 'properties' => new stdClass() ],
             [ $this, 'list_field_groups' ]
         );
 
