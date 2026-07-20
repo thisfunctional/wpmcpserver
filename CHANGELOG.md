@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.1.1]
+
+### Fixed
+- The OAuth token endpoint (`/wp-json/mcp/v1/oauth/token`) now also accepts `client_id`/`client_secret` sent via HTTP Basic Authentication (RFC 6749 §2.3.1), which some clients (e.g. ChatGPT) use instead of putting credentials in the request body. Body-supplied `client_id` (as sent by Claude.ai) still takes precedence when present.
+
 ## [1.1.0]
 
 ### Added

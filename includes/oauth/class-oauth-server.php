@@ -196,6 +196,24 @@ class WP_MCP_OAuth_Server {
         $redirect_uri  = (string) $request->get_param( 'redirect_uri' );
         $code_verifier = (string) $request->get_param( 'code_verifier' );
 
+        // RFC 6749 §2.3.1: some clients (e.g. ChatGPT) send client credentials via
+        // HTTP Basic Authentication instead of the request body. Claude.ai sends
+        // client_id in the body, so that always takes precedence when present.
+        if ( '' === $client_id ) {
+            $auth_header = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+            if ( '' === $auth_header && function_exists( 'apache_request_headers' ) ) {
+                $headers     = apache_request_headers();
+                $auth_header = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+            }
+
+            if ( str_starts_with( $auth_header, 'Basic ' ) ) {
+                $decoded = base64_decode( substr( $auth_header, 6 ), true );
+                if ( false !== $decoded && str_contains( $decoded, ':' ) ) {
+                    [ $client_id, $client_secret ] = explode( ':', $decoded, 2 );
+                }
+            }
+        }
+
         $clients = get_option( 'wp_mcp_oauth_clients', [] );
         if ( ! isset( $clients[ $client_id ] ) ) {
             WP_MCP_Logger::log( '[MCP OAuth Token] error: invalid_client' );
