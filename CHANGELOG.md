@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.1.2]
+
+### Fixed
+- The OAuth token endpoint now recovers `client_id` from the stored authorization code record when a client (e.g. ChatGPT) sends neither `client_id` in the body nor via HTTP Basic Authentication — only `code` and `code_verifier`. Since the authorization code was already bound to a specific `client_id` when `/authorize` issued it, that binding is used as the final fallback.
+
 ## [1.1.1]
 
 ### Fixed

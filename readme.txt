@@ -5,7 +5,7 @@ Tags: mcp, ai, claude, rest-api, woocommerce
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,9 @@ Yes. HTTPS is required for OAuth redirects and for Claude to trust the connector
 
 == Changelog ==
 
+= 1.1.2 =
+* Fixed: the OAuth token endpoint now also recovers client_id from the stored authorization code when a client (e.g. ChatGPT) sends neither client_id in the body nor via HTTP Basic Authentication, only code and code_verifier.
+
 = 1.1.1 =
 * Fixed: the OAuth token endpoint now also accepts client credentials sent via HTTP Basic Authentication (RFC 6749 §2.3.1), which some clients (e.g. ChatGPT) use instead of the request body. Body-supplied client_id (as sent by Claude.ai) still takes precedence.
 
@@ -85,6 +88,9 @@ Yes. HTTPS is required for OAuth redirects and for Claude to trust the connector
 * Full internationalization support (wp-mcp-server text domain, .pot translation template)
 
 == Upgrade Notice ==
+
+= 1.1.2 =
+Fixes OAuth token exchange for clients (e.g. ChatGPT) that omit client_id entirely.
 
 = 1.1.1 =
 Fixes OAuth token exchange for clients (e.g. ChatGPT) that send credentials via HTTP Basic Authentication.

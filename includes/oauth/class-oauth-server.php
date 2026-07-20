@@ -214,6 +214,16 @@ class WP_MCP_OAuth_Server {
             }
         }
 
+        $codes = get_option( 'wp_mcp_oauth_codes', [] );
+
+        // Some clients (e.g. ChatGPT) send neither client_id in the body nor via
+        // Basic Auth — only code and code_verifier. The authorization code was
+        // already bound to a client_id when /authorize issued it, so recover it
+        // from the stored code record.
+        if ( '' === $client_id && isset( $codes[ $code ]['client_id'] ) ) {
+            $client_id = $codes[ $code ]['client_id'];
+        }
+
         $clients = get_option( 'wp_mcp_oauth_clients', [] );
         if ( ! isset( $clients[ $client_id ] ) ) {
             WP_MCP_Logger::log( '[MCP OAuth Token] error: invalid_client' );
@@ -225,7 +235,6 @@ class WP_MCP_OAuth_Server {
             return new WP_REST_Response( [ 'error' => 'invalid_client' ], 401 );
         }
 
-        $codes = get_option( 'wp_mcp_oauth_codes', [] );
         if ( ! isset( $codes[ $code ] ) ) {
             WP_MCP_Logger::log( '[MCP OAuth Token] error: invalid_grant' );
             return new WP_REST_Response( [ 'error' => 'invalid_grant' ], 400 );
