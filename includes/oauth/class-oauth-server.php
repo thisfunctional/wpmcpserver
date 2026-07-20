@@ -176,17 +176,7 @@ class WP_MCP_OAuth_Server {
      * POST /wp-json/mcp/v1/oauth/token
      */
     public function handle_token( WP_REST_Request $request ): WP_REST_Response {
-        error_log( '[MCP OAuth Token] params: ' . wp_json_encode( [
-            'grant_type'    => $request->get_param( 'grant_type' ),
-            'client_id'     => $request->get_param( 'client_id' ),
-            'code'          => substr( (string) $request->get_param( 'code' ), 0, 8 ) . '...', // only the first 8 chars
-            'redirect_uri'  => $request->get_param( 'redirect_uri' ),
-            'code_verifier' => substr( (string) $request->get_param( 'code_verifier' ), 0, 8 ) . '...',
-            'client_secret' => $request->get_param( 'client_secret' ) ? '(present)' : '(absent)',
-        ] ) );
-
         if ( 'authorization_code' !== $request->get_param( 'grant_type' ) ) {
-            error_log( '[MCP OAuth Token] error: unsupported_grant_type' );
             return new WP_REST_Response( [ 'error' => 'unsupported_grant_type' ], 400 );
         }
 
@@ -198,18 +188,15 @@ class WP_MCP_OAuth_Server {
 
         $clients = get_option( 'wp_mcp_oauth_clients', [] );
         if ( ! isset( $clients[ $client_id ] ) ) {
-            error_log( '[MCP OAuth Token] error: invalid_client' );
             return new WP_REST_Response( [ 'error' => 'invalid_client' ], 401 );
         }
         // client_secret is optional for public clients using PKCE
         if ( '' !== $client_secret && ! hash_equals( $clients[ $client_id ]['client_secret'], $client_secret ) ) {
-            error_log( '[MCP OAuth Token] error: invalid_client' );
             return new WP_REST_Response( [ 'error' => 'invalid_client' ], 401 );
         }
 
         $codes = get_option( 'wp_mcp_oauth_codes', [] );
         if ( ! isset( $codes[ $code ] ) ) {
-            error_log( '[MCP OAuth Token] error: invalid_grant' );
             return new WP_REST_Response( [ 'error' => 'invalid_grant' ], 400 );
         }
         $code_data = $codes[ $code ];
@@ -222,14 +209,12 @@ class WP_MCP_OAuth_Server {
             || ! hash_equals( $code_data['client_id'], $client_id )
             || ! hash_equals( $code_data['redirect_uri'], $redirect_uri )
         ) {
-            error_log( '[MCP OAuth Token] error: invalid_grant' );
             return new WP_REST_Response( [ 'error' => 'invalid_grant' ], 400 );
         }
 
         // PKCE: SHA256( code_verifier ) in base64url must match the stored code_challenge.
         $challenge = rtrim( strtr( base64_encode( hash( 'sha256', $code_verifier, true ) ), '+/', '-_' ), '=' );
         if ( empty( $code_data['code_challenge'] ) || ! hash_equals( $code_data['code_challenge'], $challenge ) ) {
-            error_log( '[MCP OAuth Token] error: invalid_grant' );
             return new WP_REST_Response( [ 'error' => 'invalid_grant', 'error_description' => __( 'Invalid PKCE.', 'wp-mcp-server' ) ], 400 );
         }
 

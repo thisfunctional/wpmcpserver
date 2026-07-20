@@ -1,15 +1,15 @@
-# Copyright (C) 2026 
+# Copyright (C) 2026 this.functional
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WP MCP Server 0.1.0\n"
+"Project-Id-Version: WP MCP Server 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-mcp-server\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-20T10:35:03+00:00\n"
+"POT-Creation-Date: 2026-07-20T14:06:36+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: wp-mcp-server\n"
@@ -20,9 +20,20 @@ msgstr ""
 msgid "WP MCP Server"
 msgstr ""
 
+#. Plugin URI of the plugin
+#. Author URI of the plugin
+#: wp-mcp-server.php
+msgid "https://thisfunctional.pt"
+msgstr ""
+
 #. Description of the plugin
 #: wp-mcp-server.php
 msgid "Turns WordPress into an MCP server for AI assistants like Claude."
+msgstr ""
+
+#. Author of the plugin
+#: wp-mcp-server.php
+msgid "this.functional"
 msgstr ""
 
 #: admin/class-admin-settings.php:9
@@ -149,94 +160,107 @@ msgid "Invalid JSON-RPC request"
 msgstr ""
 
 #. translators: %s: JSON-RPC method name
-#: includes/class-mcp-server.php:62
+#: includes/class-mcp-server.php:63
 #, php-format
 msgid "Method '%s' not found"
 msgstr ""
 
-#: includes/modules/class-module-acf.php:10
+#: includes/modules/class-module-acf.php:17
 msgid "Gets all ACF fields for a specific post."
 msgstr ""
 
-#: includes/modules/class-module-acf.php:15
+#: includes/modules/class-module-acf.php:22
 #: includes/modules/class-module-wp-core.php:30
 msgid "Post ID"
 msgstr ""
 
-#: includes/modules/class-module-acf.php:23
+#: includes/modules/class-module-acf.php:30
 msgid "Lists all ACF field groups and their associated post types."
 msgstr ""
 
-#: includes/modules/class-module-acf.php:30
+#: includes/modules/class-module-acf.php:37
 msgid "Searches posts by an ACF field value."
 msgstr ""
 
-#: includes/modules/class-module-acf.php:35
+#: includes/modules/class-module-acf.php:42
 msgid "ACF field name (meta_key)"
 msgstr ""
 
-#: includes/modules/class-module-acf.php:36
+#: includes/modules/class-module-acf.php:43
 msgid "Value to search for"
 msgstr ""
 
-#: includes/modules/class-module-acf.php:37
+#: includes/modules/class-module-acf.php:44
 msgid "Post type to search (default: any)"
 msgstr ""
 
-#: includes/modules/class-module-acf.php:38
+#: includes/modules/class-module-acf.php:45
 #: includes/modules/class-module-wp-core.php:17
 msgid "Maximum number of results (default: 10)"
 msgstr ""
 
-#: includes/modules/class-module-woocommerce.php:10
-msgid "Lists or searches WooCommerce products."
-msgstr ""
-
-#: includes/modules/class-module-woocommerce.php:14
-msgid "Search term"
-msgstr ""
-
-#: includes/modules/class-module-woocommerce.php:15
-msgid "Product status (default: publish)"
-msgstr ""
-
-#: includes/modules/class-module-woocommerce.php:16
-msgid "Stock: instock, outofstock, onbackorder"
+#: includes/modules/class-module-acf.php:54
+#: includes/modules/class-module-acf.php:68
+#: includes/modules/class-module-acf.php:93
+msgid "ACF is not installed or active."
 msgstr ""
 
 #: includes/modules/class-module-woocommerce.php:17
-#: includes/modules/class-module-woocommerce.php:32
+msgid "Lists or searches WooCommerce products."
+msgstr ""
+
+#: includes/modules/class-module-woocommerce.php:21
+msgid "Search term"
+msgstr ""
+
+#: includes/modules/class-module-woocommerce.php:22
+msgid "Product status (default: publish)"
+msgstr ""
+
+#: includes/modules/class-module-woocommerce.php:23
+msgid "Stock: instock, outofstock, onbackorder"
+msgstr ""
+
+#: includes/modules/class-module-woocommerce.php:24
+#: includes/modules/class-module-woocommerce.php:39
 msgid "Maximum number of results (default: 20)"
 msgstr ""
 
-#: includes/modules/class-module-woocommerce.php:25
+#: includes/modules/class-module-woocommerce.php:32
 msgid "Lists WooCommerce orders with optional filters."
 msgstr ""
 
-#: includes/modules/class-module-woocommerce.php:29
+#: includes/modules/class-module-woocommerce.php:36
 msgid "Status: pending, processing, completed, cancelled, refunded"
 msgstr ""
 
-#: includes/modules/class-module-woocommerce.php:30
-#: includes/modules/class-module-woocommerce.php:44
+#: includes/modules/class-module-woocommerce.php:37
+#: includes/modules/class-module-woocommerce.php:51
 msgid "Start date (YYYY-MM-DD)"
 msgstr ""
 
-#: includes/modules/class-module-woocommerce.php:31
-#: includes/modules/class-module-woocommerce.php:45
+#: includes/modules/class-module-woocommerce.php:38
+#: includes/modules/class-module-woocommerce.php:52
 msgid "End date (YYYY-MM-DD)"
 msgstr ""
 
-#: includes/modules/class-module-woocommerce.php:40
+#: includes/modules/class-module-woocommerce.php:47
 msgid "Revenue summary for a date range."
 msgstr ""
 
-#: includes/modules/class-module-woocommerce.php:53
+#: includes/modules/class-module-woocommerce.php:60
 msgid "Products with low or no stock."
 msgstr ""
 
-#: includes/modules/class-module-woocommerce.php:57
+#: includes/modules/class-module-woocommerce.php:64
 msgid "Minimum stock quantity (default: 5)"
+msgstr ""
+
+#: includes/modules/class-module-woocommerce.php:73
+#: includes/modules/class-module-woocommerce.php:113
+#: includes/modules/class-module-woocommerce.php:155
+#: includes/modules/class-module-woocommerce.php:201
+msgid "WooCommerce is not installed or active."
 msgstr ""
 
 #: includes/modules/class-module-wp-core.php:10
@@ -284,46 +308,46 @@ msgid "redirect_uris is required."
 msgstr ""
 
 #: includes/oauth/class-oauth-server.php:103
-#: wp-mcp-server.php:71
+#: wp-mcp-server.php:75
 msgid "Invalid nonce."
 msgstr ""
 
 #: includes/oauth/class-oauth-server.php:144
-#: wp-mcp-server.php:99
+#: wp-mcp-server.php:103
 msgid "Authorize access — WP MCP Server"
 msgstr ""
 
 #: includes/oauth/class-oauth-server.php:148
-#: wp-mcp-server.php:102
+#: wp-mcp-server.php:106
 msgid "Authorize access"
 msgstr ""
 
 #. translators: 1: OAuth client name, 2: site host, 3: WordPress username
 #: includes/oauth/class-oauth-server.php:153
-#: wp-mcp-server.php:105
+#: wp-mcp-server.php:109
 #, php-format
 msgid "%1$s wants to connect to %2$s via MCP, on behalf of %3$s."
 msgstr ""
 
 #: includes/oauth/class-oauth-server.php:168
-#: wp-mcp-server.php:118
+#: wp-mcp-server.php:122
 msgid "Authorize access to WordPress"
 msgstr ""
 
-#: includes/oauth/class-oauth-server.php:233
+#: includes/oauth/class-oauth-server.php:218
 msgid "Invalid PKCE."
 msgstr ""
 
-#: wp-mcp-server.php:54
+#: wp-mcp-server.php:58
 msgid "Invalid client_id."
 msgstr ""
 
-#: wp-mcp-server.php:54
-#: wp-mcp-server.php:59
-#: wp-mcp-server.php:71
+#: wp-mcp-server.php:58
+#: wp-mcp-server.php:63
+#: wp-mcp-server.php:75
 msgid "OAuth Error"
 msgstr ""
 
-#: wp-mcp-server.php:59
+#: wp-mcp-server.php:63
 msgid "Invalid redirect_uri."
 msgstr ""

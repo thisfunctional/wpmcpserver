@@ -43,7 +43,6 @@ class WP_MCP_Router {
                 ] ],
             ];
         } catch ( Throwable $e ) {
-            error_log( '[MCP TOOL FATAL] ' . $name . ': ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString() );
             return [
                 'isError' => true,
                 'content' => [ [ 'type' => 'text', 'text' => $e->getMessage() ] ],
