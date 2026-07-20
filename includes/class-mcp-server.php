@@ -55,6 +55,13 @@ class WP_MCP_Server {
             'result'      => $verified ? 'ok' : 'fail',
         ] );
 
+        if ( ! $verified ) {
+            // Temporary: dump every request header when auth fails, to see exactly
+            // what ChatGPT sends. Only on fail so normal logs stay uncluttered.
+            $headers = function_exists( 'apache_request_headers' ) ? apache_request_headers() : [];
+            WP_MCP_Logger::log( '[MCP Headers Debug]', array_change_key_case( $headers, CASE_LOWER ) );
+        }
+
         if ( $bypassed || $verified ) return true;
 
         return new WP_Error( 'rest_forbidden', __( 'Authentication required', 'wp-mcp-server' ), [ 'status' => 401 ] );

@@ -5,7 +5,7 @@ Tags: mcp, ai, claude, rest-api, woocommerce
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 1.1.6
+Stable tag: 1.1.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,9 @@ Yes. HTTPS is required for OAuth redirects and for Claude to trust the connector
 
 == Changelog ==
 
+= 1.1.7 =
+* Added: temporary diagnostic logging that dumps every HTTP request header when authentication fails, to help identify exactly what unauthenticated MCP clients (e.g. ChatGPT) are sending. Only logs on auth failure, so normal request logs stay unaffected.
+
 = 1.1.6 =
 * Fixed: the MCP endpoint's auth check now reads the JSON-RPC method via the request's already-parsed body instead of re-reading the raw input stream, so the initialize-handshake bypass added in 1.1.5 reliably detects the method instead of silently failing to on some server configurations.
 * Changed: the internal auth log now also records the HTTP method (GET/POST/OPTIONS/etc.) of every request, to help diagnose clients that arrive without a body or without credentials.
@@ -103,6 +106,9 @@ Yes. HTTPS is required for OAuth redirects and for Claude to trust the connector
 * Full internationalization support (wp-mcp-server text domain, .pot translation template)
 
 == Upgrade Notice ==
+
+= 1.1.7 =
+Adds temporary header-dump diagnostics on auth failure to help debug unauthenticated MCP client requests.
 
 = 1.1.6 =
 Makes the initialize-handshake auth bypass (1.1.5) reliable and adds HTTP method to the internal auth log.

@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.1.7]
+
+### Added
+- Temporary diagnostic logging in `check_permission()`: when authentication fails, every HTTP request header (`apache_request_headers()`, lower-cased) is logged to `[MCP Headers Debug]`, to help identify exactly what unauthenticated MCP clients (e.g. ChatGPT) send. Only fires on auth failure, so normal request logs are unaffected. Intended to be removed once the underlying client behavior is understood.
+
 ## [1.1.6]
 
 ### Fixed
