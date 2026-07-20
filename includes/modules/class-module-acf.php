@@ -3,7 +3,14 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 class WP_MCP_Module_ACF {
 
+    private function is_available(): bool {
+        return function_exists( 'get_field' ) || class_exists( 'ACF' );
+    }
+
     public function register( WP_MCP_Router $router ): void {
+        if ( ! $this->is_available() ) {
+            return;
+        }
 
         $router->register_tool(
             'acf_get_fields',
@@ -43,6 +50,10 @@ class WP_MCP_Module_ACF {
     }
 
     public function get_fields( array $args ): array {
+        if ( ! $this->is_available() ) {
+            throw new Exception( __( 'ACF is not installed or active.', 'wp-mcp-server' ) );
+        }
+
         $post_id = (int) $args['post_id'];
         $fields  = get_fields( $post_id );
 
@@ -53,6 +64,10 @@ class WP_MCP_Module_ACF {
     }
 
     public function list_field_groups( array $args ): array {
+        if ( ! $this->is_available() ) {
+            throw new Exception( __( 'ACF is not installed or active.', 'wp-mcp-server' ) );
+        }
+
         $groups = acf_get_field_groups();
         $result = [];
 
@@ -74,6 +89,10 @@ class WP_MCP_Module_ACF {
     }
 
     public function search_by_field( array $args ): array {
+        if ( ! $this->is_available() ) {
+            throw new Exception( __( 'ACF is not installed or active.', 'wp-mcp-server' ) );
+        }
+
         $query = new WP_Query( [
             'post_type'      => sanitize_text_field( $args['post_type'] ?? 'any' ),
             'post_status'    => 'publish',

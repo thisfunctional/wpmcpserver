@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       WP MCP Server
  * Description:       Turns WordPress into an MCP server for AI assistants like Claude.
- * Version:           0.1.1
+ * Version:           0.1.2
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * License:           GPL v2 or later
@@ -12,7 +12,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'WP_MCP_VERSION', '0.1.1' );
+define( 'WP_MCP_VERSION', '0.1.2' );
 define( 'WP_MCP_DIR', plugin_dir_path( __FILE__ ) );
 
 require_once WP_MCP_DIR . 'includes/class-mcp-auth.php';
@@ -123,6 +123,22 @@ add_action( 'init', function () {
 
 add_action( 'init', function () { ( new WP_MCP_OAuth_Server() )->init(); } );
 
+// Drop modules whose dependency plugin is no longer active (e.g. WooCommerce/ACF deactivated).
+add_action( 'init', function () {
+    $enabled  = get_option( 'wp_mcp_enabled_modules', [ 'wp_core' ] );
+    $filtered = array_values( array_filter( $enabled, function ( $module ) {
+        return match ( $module ) {
+            'woocommerce' => class_exists( 'WooCommerce' ),
+            'acf'         => function_exists( 'get_field' ) || class_exists( 'ACF' ),
+            default       => true,
+        };
+    } ) );
+
+    if ( $filtered !== $enabled ) {
+        update_option( 'wp_mcp_enabled_modules', $filtered );
+    }
+} );
+
 add_action( 'rest_api_init', function () {
     ( new WP_MCP_Server() )->register_routes();
 } );
@@ -133,7 +149,7 @@ add_action( 'admin_menu', function () {
 
 register_activation_hook( __FILE__, function () {
     add_option( 'wp_mcp_api_key', wp_generate_password( 32, false ) );
-    add_option( 'wp_mcp_enabled_modules', [ 'wp_core', 'woocommerce', 'acf' ] );
+    add_option( 'wp_mcp_enabled_modules', [ 'wp_core' ] );
 
     // Pre-generated OAuth client for manual fallback
     $client_id     = wp_generate_uuid4();
