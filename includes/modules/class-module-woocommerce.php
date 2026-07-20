@@ -3,7 +3,14 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 class WP_MCP_Module_WooCommerce {
 
+    private function is_available(): bool {
+        return class_exists( 'WooCommerce' );
+    }
+
     public function register( WP_MCP_Router $router ): void {
+        if ( ! $this->is_available() ) {
+            return;
+        }
 
         $router->register_tool(
             'woo_get_products',
@@ -62,6 +69,10 @@ class WP_MCP_Module_WooCommerce {
     }
 
     public function get_products( array $args ): array {
+        if ( ! $this->is_available() ) {
+            throw new Exception( __( 'WooCommerce is not installed or active.', 'wp-mcp-server' ) );
+        }
+
         $query_args = [
             'post_type'      => 'product',
             'post_status'    => $args['status'] ?? 'publish',
@@ -98,6 +109,10 @@ class WP_MCP_Module_WooCommerce {
     }
 
     public function get_orders( array $args ): array {
+        if ( ! $this->is_available() ) {
+            throw new Exception( __( 'WooCommerce is not installed or active.', 'wp-mcp-server' ) );
+        }
+
         $query_args = [
             'limit'   => min( (int) ( $args['limit'] ?? 20 ), 100 ),
             'orderby' => 'date',
@@ -136,6 +151,10 @@ class WP_MCP_Module_WooCommerce {
     }
 
     public function get_revenue( array $args ): array {
+        if ( ! $this->is_available() ) {
+            throw new Exception( __( 'WooCommerce is not installed or active.', 'wp-mcp-server' ) );
+        }
+
         global $wpdb;
 
         $date_from = sanitize_text_field( $args['date_from'] ?? date( 'Y-m-01' ) );
@@ -178,6 +197,10 @@ class WP_MCP_Module_WooCommerce {
     }
 
     public function get_low_stock( array $args ): array {
+        if ( ! $this->is_available() ) {
+            throw new Exception( __( 'WooCommerce is not installed or active.', 'wp-mcp-server' ) );
+        }
+
         $threshold = (int) ( $args['threshold'] ?? 5 );
 
         $query = new WP_Query( [
