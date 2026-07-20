@@ -42,7 +42,8 @@ class WP_MCP_Router {
                     'text' => is_string( $result ) ? $result : wp_json_encode( $result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE ),
                 ] ],
             ];
-        } catch ( Exception $e ) {
+        } catch ( Throwable $e ) {
+            error_log( '[MCP TOOL FATAL] ' . $name . ': ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString() );
             return [
                 'isError' => true,
                 'content' => [ [ 'type' => 'text', 'text' => $e->getMessage() ] ],

@@ -44,9 +44,13 @@ class WP_MCP_Server {
     }
 
     public function handle_request( WP_REST_Request $request ): WP_REST_Response {
+        error_log( '[MCP REQUEST START] uri=' . $_SERVER['REQUEST_URI'] );
+
         error_log( '[MCP] ' . $request->get_method() . ' method=' . ( $request->get_json_params()['method'] ?? 'none' ) . ' auth=' . ( $request->get_header('Authorization') ? 'present' : 'missing' ) );
 
         $body = $request->get_json_params();
+
+        error_log( '[MCP REQUEST] method=' . ( $body['method'] ?? 'MISSING' ) . ' id=' . json_encode( $body['id'] ?? null ) );
 
         if ( empty( $body['jsonrpc'] ) || '2.0' !== $body['jsonrpc'] ) {
             return $this->error( null, -32600, __( 'Invalid JSON-RPC request', 'wp-mcp-server' ) );
@@ -56,17 +60,30 @@ class WP_MCP_Server {
         $method = $body['method'] ?? '';
         $params = $body['params'] ?? [];
 
-        return match ( $method ) {
-            'initialize'        => $this->handle_initialize( $id ),
-            'notifications/initialized' => new WP_REST_Response( [ 'jsonrpc' => '2.0', 'id' => null ], 200 ),
-            'tools/list'        => $this->handle_tools_list( $id ),
-            'tools/call'        => $this->handle_tools_call( $id, $params ),
-            default             => $this->error( $id, -32601, sprintf(
-                /* translators: %s: JSON-RPC method name */
-                __( "Method '%s' not found", 'wp-mcp-server' ),
-                $method
-            ) ),
-        };
+        try {
+            $response = match ( $method ) {
+                'initialize'        => $this->handle_initialize( $id ),
+                'notifications/initialized' => new WP_REST_Response( [ 'jsonrpc' => '2.0', 'id' => null ], 200 ),
+                'tools/list'        => $this->handle_tools_list( $id ),
+                'tools/call'        => $this->handle_tools_call( $id, $params ),
+                default             => $this->error( $id, -32601, sprintf(
+                    /* translators: %s: JSON-RPC method name */
+                    __( "Method '%s' not found", 'wp-mcp-server' ),
+                    $method
+                ) ),
+            };
+        } catch ( Throwable $e ) {
+            error_log( '[MCP FATAL] ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString() );
+            return new WP_REST_Response( [
+                'jsonrpc' => '2.0',
+                'id'      => $body['id'] ?? null,
+                'error'   => [ 'code' => -32603, 'message' => 'Internal error: ' . $e->getMessage() ],
+            ], 200 );
+        }
+
+        error_log( '[MCP RESPONSE] ' . substr( wp_json_encode( $response->get_data() ), 0, 500 ) );
+
+        return $response;
     }
 
     private function handle_initialize( $id ): WP_REST_Response {
