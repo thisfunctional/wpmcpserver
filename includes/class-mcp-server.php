@@ -35,6 +35,8 @@ class WP_MCP_Server {
     }
 
     public function check_permission( WP_REST_Request $request ): bool|WP_Error {
+        error_log( '[MCP Auth] header=' . ( $request->get_header('Authorization') ? substr($request->get_header('Authorization'), 0, 20) . '...' : 'none' ) . ' result=' . ( WP_MCP_Auth::verify($request) ? 'ok' : 'fail' ) );
+
         if ( WP_MCP_Auth::verify( $request ) ) return true;
 
         header( 'WWW-Authenticate: Bearer realm="' . rest_url( 'mcp/v1' ) . '", error="invalid_token"' );
@@ -42,6 +44,8 @@ class WP_MCP_Server {
     }
 
     public function handle_request( WP_REST_Request $request ): WP_REST_Response {
+        error_log( '[MCP] ' . $request->get_method() . ' method=' . ( $request->get_json_params()['method'] ?? 'none' ) . ' auth=' . ( $request->get_header('Authorization') ? 'present' : 'missing' ) );
+
         $body = $request->get_json_params();
 
         if ( empty( $body['jsonrpc'] ) || '2.0' !== $body['jsonrpc'] ) {
