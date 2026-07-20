@@ -222,6 +222,7 @@ class WP_MCP_OAuth_Server {
         // from the stored code record.
         if ( '' === $client_id && isset( $codes[ $code ]['client_id'] ) ) {
             $client_id = $codes[ $code ]['client_id'];
+            WP_MCP_Logger::log( '[MCP OAuth Token] client_id from code fallback', [ 'client_id' => $client_id ] );
         }
 
         $clients = get_option( 'wp_mcp_oauth_clients', [] );
@@ -264,6 +265,11 @@ class WP_MCP_OAuth_Server {
         $tokens       = get_option( 'wp_mcp_oauth_tokens', [] );
         $tokens[]     = $access_token;
         update_option( 'wp_mcp_oauth_tokens', $tokens );
+
+        WP_MCP_Logger::log( '[MCP OAuth Token] success', [
+            'client_id'    => $client_id,
+            'token_prefix' => substr( $access_token, 0, 8 ),
+        ] );
 
         return new WP_REST_Response( [
             'access_token' => $access_token,

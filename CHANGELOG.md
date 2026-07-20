@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.1.3]
+
+### Added
+- Diagnostic logging in the OAuth token endpoint: a `[MCP OAuth Token] success` entry on successful token issuance (`client_id`, token prefix) and a `[MCP OAuth Token] client_id from code fallback` entry when the client_id-from-authorization-code fallback (added in 1.1.2) is actually exercised. Both are gated behind `wp_mcp_debug_enabled` like all other logger output.
+
 ## [1.1.2]
 
 ### Fixed
