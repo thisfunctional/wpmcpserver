@@ -1,0 +1,329 @@
+# Copyright (C) 2026 
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: WP MCP Server 0.1.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-mcp-server\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-07-20T10:35:03+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: wp-mcp-server\n"
+
+#. Plugin Name of the plugin
+#: wp-mcp-server.php
+#: admin/class-admin-settings.php:8
+msgid "WP MCP Server"
+msgstr ""
+
+#. Description of the plugin
+#: wp-mcp-server.php
+msgid "Turns WordPress into an MCP server for AI assistants like Claude."
+msgstr ""
+
+#: admin/class-admin-settings.php:9
+msgid "MCP Server"
+msgstr ""
+
+#: admin/class-admin-settings.php:27
+msgid "Settings saved."
+msgstr ""
+
+#: admin/class-admin-settings.php:56
+msgid "Connect this site as an MCP connector to AI assistants like Claude."
+msgstr ""
+
+#: admin/class-admin-settings.php:59
+msgid "How to connect this site to Claude"
+msgstr ""
+
+#: admin/class-admin-settings.php:61
+msgid "Step 1."
+msgstr ""
+
+#: admin/class-admin-settings.php:61
+msgid "Copy the endpoint URL below."
+msgstr ""
+
+#: admin/class-admin-settings.php:66
+#: admin/class-admin-settings.php:78
+#: admin/class-admin-settings.php:79
+#: admin/class-admin-settings.php:142
+msgid "Copy"
+msgstr ""
+
+#: admin/class-admin-settings.php:70
+msgid "Step 2."
+msgstr ""
+
+#: admin/class-admin-settings.php:70
+msgid "In Claude, go to Settings → Connectors → Add custom connector and paste the URL."
+msgstr ""
+
+#: admin/class-admin-settings.php:72
+msgid "Step 3."
+msgstr ""
+
+#: admin/class-admin-settings.php:72
+msgid "Click Connect and approve access when the browser opens."
+msgstr ""
+
+#: admin/class-admin-settings.php:75
+msgid "If Claude shows a connection error, expand here"
+msgstr ""
+
+#: admin/class-admin-settings.php:76
+msgid "Some environments require manual configuration. Go back to the \"Add custom connector\" screen in Claude, click Add an OAuth Client ID and fill in:"
+msgstr ""
+
+#: admin/class-admin-settings.php:83
+msgid "Authentication happens automatically via OAuth — you don't need an API key."
+msgstr ""
+
+#: admin/class-admin-settings.php:89
+msgid "Modules"
+msgstr ""
+
+#: admin/class-admin-settings.php:97
+msgid "Posts, pages, CPTs, taxonomies, media"
+msgstr ""
+
+#: admin/class-admin-settings.php:108
+msgid "Products, orders, customers, revenue"
+msgstr ""
+
+#: admin/class-admin-settings.php:111
+msgid "WooCommerce is not installed."
+msgstr ""
+
+#: admin/class-admin-settings.php:122
+msgid "Custom fields (Advanced Custom Fields)"
+msgstr ""
+
+#: admin/class-admin-settings.php:125
+msgid "ACF is not installed."
+msgstr ""
+
+#: admin/class-admin-settings.php:132
+msgid "API access (advanced)"
+msgstr ""
+
+#: admin/class-admin-settings.php:134
+msgid "For those who prefer to access the API directly, without going through the OAuth flow."
+msgstr ""
+
+#. translators: %s: API key
+#: admin/class-admin-settings.php:148
+#, php-format
+msgid "Use in header: %s"
+msgstr ""
+
+#: admin/class-admin-settings.php:156
+msgid "Regenerate API Key"
+msgstr ""
+
+#: admin/class-admin-settings.php:160
+msgid "Generate a new API key (invalidates the current one)"
+msgstr ""
+
+#: admin/class-admin-settings.php:168
+msgid "Save settings"
+msgstr ""
+
+#. translators: %s: tool name
+#: includes/class-mcp-router.php:31
+#, php-format
+msgid "Tool '%s' not found."
+msgstr ""
+
+#: includes/class-mcp-server.php:41
+msgid "Authentication required"
+msgstr ""
+
+#: includes/class-mcp-server.php:48
+msgid "Invalid JSON-RPC request"
+msgstr ""
+
+#. translators: %s: JSON-RPC method name
+#: includes/class-mcp-server.php:62
+#, php-format
+msgid "Method '%s' not found"
+msgstr ""
+
+#: includes/modules/class-module-acf.php:10
+msgid "Gets all ACF fields for a specific post."
+msgstr ""
+
+#: includes/modules/class-module-acf.php:15
+#: includes/modules/class-module-wp-core.php:30
+msgid "Post ID"
+msgstr ""
+
+#: includes/modules/class-module-acf.php:23
+msgid "Lists all ACF field groups and their associated post types."
+msgstr ""
+
+#: includes/modules/class-module-acf.php:30
+msgid "Searches posts by an ACF field value."
+msgstr ""
+
+#: includes/modules/class-module-acf.php:35
+msgid "ACF field name (meta_key)"
+msgstr ""
+
+#: includes/modules/class-module-acf.php:36
+msgid "Value to search for"
+msgstr ""
+
+#: includes/modules/class-module-acf.php:37
+msgid "Post type to search (default: any)"
+msgstr ""
+
+#: includes/modules/class-module-acf.php:38
+#: includes/modules/class-module-wp-core.php:17
+msgid "Maximum number of results (default: 10)"
+msgstr ""
+
+#: includes/modules/class-module-woocommerce.php:10
+msgid "Lists or searches WooCommerce products."
+msgstr ""
+
+#: includes/modules/class-module-woocommerce.php:14
+msgid "Search term"
+msgstr ""
+
+#: includes/modules/class-module-woocommerce.php:15
+msgid "Product status (default: publish)"
+msgstr ""
+
+#: includes/modules/class-module-woocommerce.php:16
+msgid "Stock: instock, outofstock, onbackorder"
+msgstr ""
+
+#: includes/modules/class-module-woocommerce.php:17
+#: includes/modules/class-module-woocommerce.php:32
+msgid "Maximum number of results (default: 20)"
+msgstr ""
+
+#: includes/modules/class-module-woocommerce.php:25
+msgid "Lists WooCommerce orders with optional filters."
+msgstr ""
+
+#: includes/modules/class-module-woocommerce.php:29
+msgid "Status: pending, processing, completed, cancelled, refunded"
+msgstr ""
+
+#: includes/modules/class-module-woocommerce.php:30
+#: includes/modules/class-module-woocommerce.php:44
+msgid "Start date (YYYY-MM-DD)"
+msgstr ""
+
+#: includes/modules/class-module-woocommerce.php:31
+#: includes/modules/class-module-woocommerce.php:45
+msgid "End date (YYYY-MM-DD)"
+msgstr ""
+
+#: includes/modules/class-module-woocommerce.php:40
+msgid "Revenue summary for a date range."
+msgstr ""
+
+#: includes/modules/class-module-woocommerce.php:53
+msgid "Products with low or no stock."
+msgstr ""
+
+#: includes/modules/class-module-woocommerce.php:57
+msgid "Minimum stock quantity (default: 5)"
+msgstr ""
+
+#: includes/modules/class-module-wp-core.php:10
+msgid "Searches posts, pages, or custom post types by keyword."
+msgstr ""
+
+#: includes/modules/class-module-wp-core.php:14
+msgid "Keyword to search for"
+msgstr ""
+
+#: includes/modules/class-module-wp-core.php:15
+msgid "Post type (default: any)"
+msgstr ""
+
+#: includes/modules/class-module-wp-core.php:16
+msgid "Post status (default: publish)"
+msgstr ""
+
+#: includes/modules/class-module-wp-core.php:25
+msgid "Gets the full content of a post or page by ID."
+msgstr ""
+
+#: includes/modules/class-module-wp-core.php:38
+msgid "Lists all public post types available on this site."
+msgstr ""
+
+#: includes/modules/class-module-wp-core.php:45
+msgid "Lists terms of a taxonomy (categories, tags, or custom taxonomies)."
+msgstr ""
+
+#: includes/modules/class-module-wp-core.php:49
+msgid "Taxonomy slug (default: category)"
+msgstr ""
+
+#: includes/modules/class-module-wp-core.php:57
+msgid "Returns basic information about this WordPress site."
+msgstr ""
+
+#: includes/modules/class-module-wp-core.php:89
+msgid "Post not found."
+msgstr ""
+
+#: includes/oauth/class-oauth-server.php:48
+msgid "redirect_uris is required."
+msgstr ""
+
+#: includes/oauth/class-oauth-server.php:103
+#: wp-mcp-server.php:71
+msgid "Invalid nonce."
+msgstr ""
+
+#: includes/oauth/class-oauth-server.php:144
+#: wp-mcp-server.php:99
+msgid "Authorize access — WP MCP Server"
+msgstr ""
+
+#: includes/oauth/class-oauth-server.php:148
+#: wp-mcp-server.php:102
+msgid "Authorize access"
+msgstr ""
+
+#. translators: 1: OAuth client name, 2: site host, 3: WordPress username
+#: includes/oauth/class-oauth-server.php:153
+#: wp-mcp-server.php:105
+#, php-format
+msgid "%1$s wants to connect to %2$s via MCP, on behalf of %3$s."
+msgstr ""
+
+#: includes/oauth/class-oauth-server.php:168
+#: wp-mcp-server.php:118
+msgid "Authorize access to WordPress"
+msgstr ""
+
+#: includes/oauth/class-oauth-server.php:233
+msgid "Invalid PKCE."
+msgstr ""
+
+#: wp-mcp-server.php:54
+msgid "Invalid client_id."
+msgstr ""
+
+#: wp-mcp-server.php:54
+#: wp-mcp-server.php:59
+#: wp-mcp-server.php:71
+msgid "OAuth Error"
+msgstr ""
+
+#: wp-mcp-server.php:59
+msgid "Invalid redirect_uri."
+msgstr ""

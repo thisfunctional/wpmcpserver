@@ -1,0 +1,5 @@
+languages/*.mo
+languages/*.po
+*.log
+.DS_Store
+node_modules/
