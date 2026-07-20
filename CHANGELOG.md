@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.1.5]
+
+### Changed
+- `check_permission()` in `WP_MCP_Server` now reads the raw JSON-RPC method from the request body (`file_get_contents('php://input')` + `json_decode`) before enforcing authentication, and lets `initialize` and `notifications/initialized` through without a valid token — allowing clients to complete the MCP handshake before they necessarily have one. Every other method (`tools/list`, `tools/call`, etc.) is unaffected and still requires authentication. A `[MCP Auth]` log entry now records the method and whether the bypass was taken.
+
 ## [1.1.4]
 
 ### Fixed

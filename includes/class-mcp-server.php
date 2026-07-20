@@ -37,12 +37,25 @@ class WP_MCP_Server {
     }
 
     public function check_permission( WP_REST_Request $request ): bool|WP_Error {
+        $raw_body = file_get_contents( 'php://input' );
+        $body     = json_decode( $raw_body, true );
+        $method   = $body['method'] ?? '';
+
+        // The initialize handshake happens before a client necessarily has a token
+        // yet (e.g. while probing the connector), so it's allowed through unauthenticated.
+        if ( in_array( $method, [ 'initialize', 'notifications/initialized' ], true ) ) {
+            WP_MCP_Logger::log( '[MCP Auth]', [ 'method' => $method, 'bypassed' => true ] );
+            return true;
+        }
+
         $auth_header = $request->get_header( 'Authorization' );
         $verified    = WP_MCP_Auth::verify( $request );
 
         WP_MCP_Logger::log( '[MCP Auth]', [
-            'header' => $auth_header ? substr( $auth_header, 0, 20 ) . '...' : 'none',
-            'result' => $verified ? 'ok' : 'fail',
+            'method'   => $method,
+            'bypassed' => false,
+            'header'   => $auth_header ? substr( $auth_header, 0, 20 ) . '...' : 'none',
+            'result'   => $verified ? 'ok' : 'fail',
         ] );
 
         if ( $verified ) return true;

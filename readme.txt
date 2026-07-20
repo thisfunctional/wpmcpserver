@@ -5,7 +5,7 @@ Tags: mcp, ai, claude, rest-api, woocommerce
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 1.1.4
+Stable tag: 1.1.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,9 @@ Yes. HTTPS is required for OAuth redirects and for Claude to trust the connector
 
 == Changelog ==
 
+= 1.1.5 =
+* Changed: the MCP endpoint no longer requires authentication for the `initialize` and `notifications/initialized` JSON-RPC methods, so clients can complete the protocol handshake before a token is available. All other methods (including `tools/list` and `tools/call`) still require authentication as before.
+
 = 1.1.4 =
 * Fixed: the "Clear logs" button left a blank page at admin-post.php instead of redirecting back to the settings page. The action hook was only being registered on admin_menu, which never fires for admin-post.php requests; it's now registered unconditionally at plugin bootstrap. The redirect query param is now `cleared` instead of `logs_cleared`.
 * Fixed: OAuth token responses now return `token_type: "Bearer"` (capitalized) and a new `expires_in: 3600` field; issued access tokens now actually expire after 1 hour (previously they never expired) and expiry is enforced on every authenticated request.
@@ -96,6 +99,9 @@ Yes. HTTPS is required for OAuth redirects and for Claude to trust the connector
 * Full internationalization support (wp-mcp-server text domain, .pot translation template)
 
 == Upgrade Notice ==
+
+= 1.1.5 =
+The MCP protocol handshake (initialize / notifications/initialized) no longer requires a token; all other methods still do.
 
 = 1.1.4 =
 Fixes the Clear logs button, adds real OAuth token expiry (1 hour), and ensures the WWW-Authenticate header is always sent on 401 responses.
