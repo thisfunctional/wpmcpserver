@@ -5,7 +5,7 @@ Tags: mcp, ai, claude, rest-api, woocommerce
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,10 @@ Yes. HTTPS is required for OAuth redirects and for Claude to trust the connector
 
 == Changelog ==
 
+= 1.1.0 =
+* Added an internal debug logging system: a "Logs" section on the settings page with an on/off toggle, a viewer for the last 200 log entries, and a "Clear logs" action
+* Logs are stored in the wp_mcp_logs option (max 500 entries, FIFO) and only recorded when debug logging is enabled
+
 = 1.0.0 =
 * MCP (Model Context Protocol) JSON-RPC 2.0 server exposed over the WordPress REST API
 * OAuth 2.0 authorization with PKCE for Claude connector authentication, including Dynamic Client Registration and a discovery document
@@ -78,6 +82,9 @@ Yes. HTTPS is required for OAuth redirects and for Claude to trust the connector
 * Full internationalization support (wp-mcp-server text domain, .pot translation template)
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+Adds an internal debug logging system with a settings page toggle and log viewer.
 
 = 1.0.0 =
 Initial release.

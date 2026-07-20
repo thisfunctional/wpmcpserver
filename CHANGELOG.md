@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.1.0]
+
+### Added
+- Internal debug logging system (`WP_MCP_Logger`): a "Logs" section on the settings page with a debug-logging toggle (`wp_mcp_debug_enabled`), a scrollable viewer for the last 200 log entries, and a "Clear logs" action
+- Logs are stored in the `wp_mcp_logs` option as a JSON array (timestamp, message, context), capped at 500 entries FIFO, and only recorded while debug logging is enabled
+
 ## [1.0.0]
 
 Initial production release.

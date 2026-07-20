@@ -11,6 +11,24 @@ class WP_MCP_Admin_Settings {
             'wp-mcp-server',
             [ $this, 'render_page' ]
         );
+
+        add_action( 'admin_post_wp_mcp_clear_logs', [ $this, 'handle_clear_logs' ] );
+    }
+
+    public function handle_clear_logs(): void {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( esc_html__( 'You do not have permission to do this.', 'wp-mcp-server' ) );
+        }
+
+        check_admin_referer( 'wp_mcp_clear_logs' );
+
+        WP_MCP_Logger::clear();
+
+        wp_safe_redirect( add_query_arg(
+            [ 'page' => 'wp-mcp-server', 'logs_cleared' => '1' ],
+            admin_url( 'options-general.php' )
+        ) );
+        exit;
     }
 
     public function render_page(): void {
@@ -19,6 +37,7 @@ class WP_MCP_Admin_Settings {
         if ( isset( $_POST['wp_mcp_save'] ) && check_admin_referer( 'wp_mcp_settings' ) ) {
             $modules = array_map( 'sanitize_text_field', $_POST['wp_mcp_modules'] ?? [] );
             update_option( 'wp_mcp_enabled_modules', $modules );
+            update_option( 'wp_mcp_debug_enabled', ! empty( $_POST['wp_mcp_debug_enabled'] ) );
 
             if ( ! empty( $_POST['wp_mcp_regenerate_key'] ) ) {
                 update_option( 'wp_mcp_api_key', wp_generate_password( 32, false ) );
@@ -27,11 +46,17 @@ class WP_MCP_Admin_Settings {
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Settings saved.', 'wp-mcp-server' ) . '</p></div>';
         }
 
-        $api_key  = get_option( 'wp_mcp_api_key', '' );
-        $enabled  = get_option( 'wp_mcp_enabled_modules', [ 'wp_core' ] );
-        $endpoint = rest_url( 'mcp/v1/request' );
-        $has_woo  = class_exists( 'WooCommerce' );
-        $has_acf  = function_exists( 'get_fields' );
+        if ( isset( $_GET['logs_cleared'] ) ) {
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Logs cleared.', 'wp-mcp-server' ) . '</p></div>';
+        }
+
+        $api_key       = get_option( 'wp_mcp_api_key', '' );
+        $enabled       = get_option( 'wp_mcp_enabled_modules', [ 'wp_core' ] );
+        $endpoint      = rest_url( 'mcp/v1/request' );
+        $has_woo       = class_exists( 'WooCommerce' );
+        $has_acf       = function_exists( 'get_fields' );
+        $debug_enabled = get_option( 'wp_mcp_debug_enabled', false );
+        $recent_logs   = array_reverse( array_slice( WP_MCP_Logger::get_logs(), -200 ) );
 
         $default_client = get_option( 'wp_mcp_default_oauth_client', [] );
         if ( empty( $default_client ) ) {
@@ -165,7 +190,55 @@ class WP_MCP_Admin_Settings {
                     </div>
                 </details>
 
+                <h2><?php esc_html_e( 'Logs', 'wp-mcp-server' ); ?></h2>
+                <table class="form-table" role="presentation">
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'Debug logging', 'wp-mcp-server' ); ?></th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="wp_mcp_debug_enabled" value="1"
+                                    <?php checked( $debug_enabled ); ?>>
+                                <?php esc_html_e( 'Enable debug logs', 'wp-mcp-server' ); ?>
+                            </label>
+                        </td>
+                    </tr>
+                </table>
+
                 <?php submit_button( __( 'Save settings', 'wp-mcp-server' ), 'primary', 'wp_mcp_save' ); ?>
+            </form>
+
+            <h3><?php esc_html_e( 'Recent logs (last 200)', 'wp-mcp-server' ); ?></h3>
+            <div style="max-width: 900px; max-height: 400px; overflow-y: auto; border: 1px solid #c3c4c7; background: #fff;">
+                <table class="widefat striped" style="margin: 0;">
+                    <thead>
+                        <tr>
+                            <th style="width: 160px;"><?php esc_html_e( 'Time', 'wp-mcp-server' ); ?></th>
+                            <th><?php esc_html_e( 'Message', 'wp-mcp-server' ); ?></th>
+                            <th><?php esc_html_e( 'Context', 'wp-mcp-server' ); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if ( empty( $recent_logs ) ) : ?>
+                            <tr>
+                                <td colspan="3"><?php esc_html_e( 'No logs recorded yet.', 'wp-mcp-server' ); ?></td>
+                            </tr>
+                        <?php else : ?>
+                            <?php foreach ( $recent_logs as $entry ) : ?>
+                                <tr>
+                                    <td><?php echo esc_html( $entry['timestamp'] ?? '' ); ?></td>
+                                    <td><?php echo esc_html( $entry['message'] ?? '' ); ?></td>
+                                    <td><code><?php echo esc_html( $entry['context'] ?? '' ); ?></code></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin-top: 12px;">
+                <?php wp_nonce_field( 'wp_mcp_clear_logs' ); ?>
+                <input type="hidden" name="action" value="wp_mcp_clear_logs">
+                <?php submit_button( __( 'Clear logs', 'wp-mcp-server' ), 'delete', 'wp_mcp_clear_logs_submit', false ); ?>
             </form>
         </div>
         <?php

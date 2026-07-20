@@ -35,14 +35,35 @@ class WP_MCP_Server {
     }
 
     public function check_permission( WP_REST_Request $request ): bool|WP_Error {
-        if ( WP_MCP_Auth::verify( $request ) ) return true;
+        $auth_header = $request->get_header( 'Authorization' );
+        $verified    = WP_MCP_Auth::verify( $request );
+
+        WP_MCP_Logger::log( '[MCP Auth]', [
+            'header' => $auth_header ? substr( $auth_header, 0, 20 ) . '...' : 'none',
+            'result' => $verified ? 'ok' : 'fail',
+        ] );
+
+        if ( $verified ) return true;
 
         header( 'WWW-Authenticate: Bearer realm="' . rest_url( 'mcp/v1' ) . '", error="invalid_token"' );
         return new WP_Error( 'rest_forbidden', __( 'Authentication required', 'wp-mcp-server' ), [ 'status' => 401 ] );
     }
 
     public function handle_request( WP_REST_Request $request ): WP_REST_Response {
+        WP_MCP_Logger::log( '[MCP REQUEST START]', [ 'uri' => $_SERVER['REQUEST_URI'] ?? '' ] );
+
         $body = $request->get_json_params();
+
+        WP_MCP_Logger::log( '[MCP]', [
+            'http_method' => $request->get_method(),
+            'method'      => $body['method'] ?? 'none',
+            'auth'        => $request->get_header( 'Authorization' ) ? 'present' : 'missing',
+        ] );
+
+        WP_MCP_Logger::log( '[MCP REQUEST]', [
+            'method' => $body['method'] ?? 'MISSING',
+            'id'     => $body['id'] ?? null,
+        ] );
 
         if ( empty( $body['jsonrpc'] ) || '2.0' !== $body['jsonrpc'] ) {
             return $this->error( null, -32600, __( 'Invalid JSON-RPC request', 'wp-mcp-server' ) );
@@ -65,12 +86,21 @@ class WP_MCP_Server {
                 ) ),
             };
         } catch ( Throwable $e ) {
+            WP_MCP_Logger::log( '[MCP FATAL] ' . $e->getMessage(), [
+                'file'  => $e->getFile(),
+                'line'  => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ] );
             return new WP_REST_Response( [
                 'jsonrpc' => '2.0',
                 'id'      => $body['id'] ?? null,
                 'error'   => [ 'code' => -32603, 'message' => 'Internal error: ' . $e->getMessage() ],
             ], 200 );
         }
+
+        WP_MCP_Logger::log( '[MCP RESPONSE]', [
+            'data' => substr( wp_json_encode( $response->get_data() ), 0, 500 ),
+        ] );
 
         return $response;
     }

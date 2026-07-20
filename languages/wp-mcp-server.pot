@@ -2,14 +2,14 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WP MCP Server 1.0.0\n"
+"Project-Id-Version: WP MCP Server 1.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-mcp-server\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-20T14:19:03+00:00\n"
+"POT-Creation-Date: 2026-07-20T18:07:36+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: wp-mcp-server\n"
@@ -40,109 +40,153 @@ msgstr ""
 msgid "MCP Server"
 msgstr ""
 
-#: admin/class-admin-settings.php:27
+#: admin/class-admin-settings.php:20
+msgid "You do not have permission to do this."
+msgstr ""
+
+#: admin/class-admin-settings.php:46
 msgid "Settings saved."
 msgstr ""
 
-#: admin/class-admin-settings.php:56
+#: admin/class-admin-settings.php:50
+msgid "Logs cleared."
+msgstr ""
+
+#: admin/class-admin-settings.php:81
 msgid "Connect this site as an MCP connector to AI assistants like Claude."
 msgstr ""
 
-#: admin/class-admin-settings.php:59
+#: admin/class-admin-settings.php:84
 msgid "How to connect this site to Claude"
 msgstr ""
 
-#: admin/class-admin-settings.php:61
+#: admin/class-admin-settings.php:86
 msgid "Step 1."
 msgstr ""
 
-#: admin/class-admin-settings.php:61
+#: admin/class-admin-settings.php:86
 msgid "Copy the endpoint URL below."
 msgstr ""
 
-#: admin/class-admin-settings.php:66
-#: admin/class-admin-settings.php:78
-#: admin/class-admin-settings.php:79
-#: admin/class-admin-settings.php:142
+#: admin/class-admin-settings.php:91
+#: admin/class-admin-settings.php:103
+#: admin/class-admin-settings.php:104
+#: admin/class-admin-settings.php:167
 msgid "Copy"
 msgstr ""
 
-#: admin/class-admin-settings.php:70
+#: admin/class-admin-settings.php:95
 msgid "Step 2."
 msgstr ""
 
-#: admin/class-admin-settings.php:70
+#: admin/class-admin-settings.php:95
 msgid "In Claude, go to Settings → Connectors → Add custom connector and paste the URL."
 msgstr ""
 
-#: admin/class-admin-settings.php:72
+#: admin/class-admin-settings.php:97
 msgid "Step 3."
 msgstr ""
 
-#: admin/class-admin-settings.php:72
+#: admin/class-admin-settings.php:97
 msgid "Click Connect and approve access when the browser opens."
 msgstr ""
 
-#: admin/class-admin-settings.php:75
+#: admin/class-admin-settings.php:100
 msgid "If Claude shows a connection error, expand here"
 msgstr ""
 
-#: admin/class-admin-settings.php:76
+#: admin/class-admin-settings.php:101
 msgid "Some environments require manual configuration. Go back to the \"Add custom connector\" screen in Claude, click Add an OAuth Client ID and fill in:"
 msgstr ""
 
-#: admin/class-admin-settings.php:83
+#: admin/class-admin-settings.php:108
 msgid "Authentication happens automatically via OAuth — you don't need an API key."
 msgstr ""
 
-#: admin/class-admin-settings.php:89
+#: admin/class-admin-settings.php:114
 msgid "Modules"
 msgstr ""
 
-#: admin/class-admin-settings.php:97
+#: admin/class-admin-settings.php:122
 msgid "Posts, pages, CPTs, taxonomies, media"
 msgstr ""
 
-#: admin/class-admin-settings.php:108
+#: admin/class-admin-settings.php:133
 msgid "Products, orders, customers, revenue"
 msgstr ""
 
-#: admin/class-admin-settings.php:111
+#: admin/class-admin-settings.php:136
 msgid "WooCommerce is not installed."
 msgstr ""
 
-#: admin/class-admin-settings.php:122
+#: admin/class-admin-settings.php:147
 msgid "Custom fields (Advanced Custom Fields)"
 msgstr ""
 
-#: admin/class-admin-settings.php:125
+#: admin/class-admin-settings.php:150
 msgid "ACF is not installed."
 msgstr ""
 
-#: admin/class-admin-settings.php:132
+#: admin/class-admin-settings.php:157
 msgid "API access (advanced)"
 msgstr ""
 
-#: admin/class-admin-settings.php:134
+#: admin/class-admin-settings.php:159
 msgid "For those who prefer to access the API directly, without going through the OAuth flow."
 msgstr ""
 
 #. translators: %s: API key
-#: admin/class-admin-settings.php:148
+#: admin/class-admin-settings.php:173
 #, php-format
 msgid "Use in header: %s"
 msgstr ""
 
-#: admin/class-admin-settings.php:156
+#: admin/class-admin-settings.php:181
 msgid "Regenerate API Key"
 msgstr ""
 
-#: admin/class-admin-settings.php:160
+#: admin/class-admin-settings.php:185
 msgid "Generate a new API key (invalidates the current one)"
 msgstr ""
 
-#: admin/class-admin-settings.php:168
+#: admin/class-admin-settings.php:193
+msgid "Logs"
+msgstr ""
+
+#: admin/class-admin-settings.php:196
+msgid "Debug logging"
+msgstr ""
+
+#: admin/class-admin-settings.php:201
+msgid "Enable debug logs"
+msgstr ""
+
+#: admin/class-admin-settings.php:207
 msgid "Save settings"
+msgstr ""
+
+#: admin/class-admin-settings.php:210
+msgid "Recent logs (last 200)"
+msgstr ""
+
+#: admin/class-admin-settings.php:215
+msgid "Time"
+msgstr ""
+
+#: admin/class-admin-settings.php:216
+msgid "Message"
+msgstr ""
+
+#: admin/class-admin-settings.php:217
+msgid "Context"
+msgstr ""
+
+#: admin/class-admin-settings.php:223
+msgid "No logs recorded yet."
+msgstr ""
+
+#: admin/class-admin-settings.php:241
+msgid "Clear logs"
 msgstr ""
 
 #. translators: %s: tool name
@@ -151,16 +195,16 @@ msgstr ""
 msgid "Tool '%s' not found."
 msgstr ""
 
-#: includes/class-mcp-server.php:41
+#: includes/class-mcp-server.php:49
 msgid "Authentication required"
 msgstr ""
 
-#: includes/class-mcp-server.php:48
+#: includes/class-mcp-server.php:69
 msgid "Invalid JSON-RPC request"
 msgstr ""
 
 #. translators: %s: JSON-RPC method name
-#: includes/class-mcp-server.php:63
+#: includes/class-mcp-server.php:84
 #, php-format
 msgid "Method '%s' not found"
 msgstr ""
@@ -308,46 +352,46 @@ msgid "redirect_uris is required."
 msgstr ""
 
 #: includes/oauth/class-oauth-server.php:103
-#: wp-mcp-server.php:75
+#: wp-mcp-server.php:76
 msgid "Invalid nonce."
 msgstr ""
 
 #: includes/oauth/class-oauth-server.php:144
-#: wp-mcp-server.php:103
+#: wp-mcp-server.php:104
 msgid "Authorize access — WP MCP Server"
 msgstr ""
 
 #: includes/oauth/class-oauth-server.php:148
-#: wp-mcp-server.php:106
+#: wp-mcp-server.php:107
 msgid "Authorize access"
 msgstr ""
 
 #. translators: 1: OAuth client name, 2: site host, 3: WordPress username
 #: includes/oauth/class-oauth-server.php:153
-#: wp-mcp-server.php:109
+#: wp-mcp-server.php:110
 #, php-format
 msgid "%1$s wants to connect to %2$s via MCP, on behalf of %3$s."
 msgstr ""
 
 #: includes/oauth/class-oauth-server.php:168
-#: wp-mcp-server.php:122
+#: wp-mcp-server.php:123
 msgid "Authorize access to WordPress"
 msgstr ""
 
-#: includes/oauth/class-oauth-server.php:218
+#: includes/oauth/class-oauth-server.php:233
 msgid "Invalid PKCE."
 msgstr ""
 
-#: wp-mcp-server.php:58
+#: wp-mcp-server.php:59
 msgid "Invalid client_id."
 msgstr ""
 
-#: wp-mcp-server.php:58
-#: wp-mcp-server.php:63
-#: wp-mcp-server.php:75
+#: wp-mcp-server.php:59
+#: wp-mcp-server.php:64
+#: wp-mcp-server.php:76
 msgid "OAuth Error"
 msgstr ""
 
-#: wp-mcp-server.php:63
+#: wp-mcp-server.php:64
 msgid "Invalid redirect_uri."
 msgstr ""
