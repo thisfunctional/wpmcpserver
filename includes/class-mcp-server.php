@@ -54,7 +54,7 @@ class WP_MCP_Server {
 
         return match ( $method ) {
             'initialize'        => $this->handle_initialize( $id ),
-            'notifications/initialized' => new WP_REST_Response( null, 204 ),
+            'notifications/initialized' => new WP_REST_Response( [ 'jsonrpc' => '2.0', 'id' => null ], 200 ),
             'tools/list'        => $this->handle_tools_list( $id ),
             'tools/call'        => $this->handle_tools_call( $id, $params ),
             default             => $this->error( $id, -32601, sprintf(
