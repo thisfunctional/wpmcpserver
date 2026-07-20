@@ -5,7 +5,7 @@ Tags: mcp, ai, claude, rest-api, woocommerce
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 1.1.8
+Stable tag: 1.1.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,9 @@ Yes. HTTPS is required for OAuth redirects and for Claude to trust the connector
 
 == Changelog ==
 
+= 1.1.9 =
+* Fixed: `woo_get_orders` could fatal when `wc_get_orders()` returned a `WC_Order_Refund` object (which doesn't implement the billing/customer methods used to build each row). The loop now skips any result that isn't an instance of `WC_Order`.
+
 = 1.1.8 =
 * Reverted: the unauthenticated auth bypass for `initialize`/`notifications/initialized` (introduced in 1.1.5) has been removed — every JSON-RPC method on the MCP endpoint now requires authentication again, with no exceptions.
 * Reverted: the temporary `[MCP Headers Debug]` full-header dump on auth failure (1.1.7) has been removed.
@@ -112,6 +115,9 @@ Yes. HTTPS is required for OAuth redirects and for Claude to trust the connector
 * Full internationalization support (wp-mcp-server text domain, .pot translation template)
 
 == Upgrade Notice ==
+
+= 1.1.9 =
+Fixes a potential fatal in woo_get_orders when a WC_Order_Refund object appears in the results.
 
 = 1.1.8 =
 Reverts the initialize-handshake auth bypass and ChatGPT debug logging (1.1.5-1.1.7) — authentication is required on every method again.

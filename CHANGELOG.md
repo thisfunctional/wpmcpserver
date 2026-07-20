@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.1.9]
+
+### Fixed
+- `get_orders()` (the `woo_get_orders` tool) could fatal when `wc_get_orders()` returned a `WC_Order_Refund` object — refunds don't extend `WC_Order` and don't implement the billing/customer methods (`get_billing_first_name()`, etc.) used to build each result row. The loop now skips any entry that isn't an instance of `WC_Order`. `get_products()` and `get_low_stock()` were checked for the same class of bug but don't need the same guard: `wc_get_product()` there only ever returns `false` (already handled) or a concrete `WC_Product` subclass, all of which implement the methods used.
+
 ## [1.1.8]
 
 ### Reverted

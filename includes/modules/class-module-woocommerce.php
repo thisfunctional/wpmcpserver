@@ -135,6 +135,8 @@ class WP_MCP_Module_WooCommerce {
         $result = [];
 
         foreach ( $orders as $order ) {
+            if ( ! $order instanceof WC_Order ) continue;
+
             $result[] = [
                 'id'       => $order->get_id(),
                 'status'   => $order->get_status(),
