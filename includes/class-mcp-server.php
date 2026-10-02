@@ -28,12 +28,27 @@ class WP_MCP_Server {
 
     public function register_routes(): void {
         register_rest_route( 'mcp/v1', '/request', [
-            'methods'             => WP_REST_Server::CREATABLE,
+            'methods'             => [ 'GET', 'POST', 'DELETE' ],
             'callback'            => [ $this, 'handle_request' ],
             'permission_callback' => [ $this, 'check_permission' ],
         ] );
 
         add_filter( 'rest_post_dispatch', [ $this, 'add_www_authenticate_header' ], 10, 3 );
+        add_filter( 'rest_pre_serve_request', [ $this, 'serve_empty_202' ], 10, 4 );
+    }
+
+    /**
+     * JSON-RPC notifications get "202 Accepted" with NO body (MCP Streamable HTTP).
+     * WordPress would otherwise serialise the empty payload as the literal "null".
+     */
+    public function serve_empty_202( $served, $result, $request, $server ) {
+        if ( '/mcp/v1/request' === $request->get_route()
+            && $result instanceof WP_REST_Response
+            && 202 === $result->get_status()
+        ) {
+            return true;
+        }
+        return $served;
     }
 
     public function check_permission( WP_REST_Request $request ): bool|WP_Error {
@@ -65,14 +80,33 @@ class WP_MCP_Server {
             && 401 === $response->get_status()
             && '/mcp/v1/request' === $request->get_route()
         ) {
-            $response->header( 'WWW-Authenticate', 'Bearer realm="WordPress MCP Server"' );
+            $response->header(
+                'WWW-Authenticate',
+                sprintf(
+                    'Bearer realm="WordPress MCP Server", resource_metadata="%s"',
+                    esc_url_raw( wp_mcp_resource_metadata_url() )
+                )
+            );
         }
 
         return $response;
     }
 
     public function handle_request( WP_REST_Request $request ): WP_REST_Response {
-        WP_MCP_Logger::log( '[MCP REQUEST START]', [ 'uri' => $_SERVER['REQUEST_URI'] ?? '' ] );
+        WP_MCP_Logger::log( '[MCP REQUEST START]', [
+            'uri'         => $_SERVER['REQUEST_URI'] ?? '',
+            'http_method' => $request->get_method(),
+            'protocol'    => $request->get_header( 'MCP-Protocol-Version' ) ?: 'none',
+            'accept'      => $request->get_header( 'Accept' ) ?: 'none',
+        ] );
+
+        // This server is stateless and never opens an SSE stream, so GET (stream)
+        // and DELETE (session termination) are answered with 405, per the spec.
+        if ( 'POST' !== $request->get_method() ) {
+            $resp = new WP_REST_Response( null, 405 );
+            $resp->header( 'Allow', 'POST' );
+            return $resp;
+        }
 
         $body = $request->get_json_params();
 
@@ -95,10 +129,15 @@ class WP_MCP_Server {
         $method = $body['method'] ?? '';
         $params = $body['params'] ?? [];
 
+        // Notifications (no "id") and client responses never get a JSON-RPC reply.
+        if ( ! array_key_exists( 'id', $body ) && str_starts_with( (string) $method, 'notifications/' ) ) {
+            return new WP_REST_Response( null, 202 );
+        }
+
         try {
             $response = match ( $method ) {
-                'initialize'        => $this->handle_initialize( $id ),
-                'notifications/initialized' => new WP_REST_Response( [ 'jsonrpc' => '2.0', 'id' => null ], 200 ),
+                'initialize'        => $this->handle_initialize( $id, $params ),
+                'ping'              => $this->ok( $id, new stdClass() ),
                 'tools/list'        => $this->handle_tools_list( $id ),
                 'tools/call'        => $this->handle_tools_call( $id, $params ),
                 default             => $this->error( $id, -32601, sprintf(
@@ -127,9 +166,18 @@ class WP_MCP_Server {
         return $response;
     }
 
-    private function handle_initialize( $id ): WP_REST_Response {
+    private const SUPPORTED_PROTOCOLS = [ '2025-06-18', '2025-03-26', '2024-11-05' ];
+
+    private function handle_initialize( $id, array $params = [] ): WP_REST_Response {
+        // Version negotiation: echo the client's version if we support it,
+        // otherwise answer with the newest one we do support.
+        $requested = (string) ( $params['protocolVersion'] ?? '' );
+        $version   = in_array( $requested, self::SUPPORTED_PROTOCOLS, true )
+            ? $requested
+            : self::SUPPORTED_PROTOCOLS[0];
+
         return $this->ok( $id, [
-            'protocolVersion' => '2024-11-05',
+            'protocolVersion' => $version,
             'capabilities'    => [ 'tools' => new stdClass() ],
             'serverInfo'      => [
                 'name'    => 'wp-mcp-server',
@@ -148,7 +196,7 @@ class WP_MCP_Server {
         return $this->ok( $id, $this->router->call_tool( $name, $arguments ) );
     }
 
-    private function ok( $id, array $result ): WP_REST_Response {
+    private function ok( $id, array|object $result ): WP_REST_Response {
         return new WP_REST_Response( [ 'jsonrpc' => '2.0', 'id' => $id, 'result' => $result ], 200 );
     }
 
@@ -157,6 +205,6 @@ class WP_MCP_Server {
             'jsonrpc' => '2.0',
             'id'      => $id,
             'error'   => [ 'code' => $code, 'message' => $message ],
-        ], 400 );
+        ], -32600 === $code ? 400 : 200 );
     }
 }

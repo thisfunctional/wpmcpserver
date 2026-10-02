@@ -2,6 +2,38 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.3.0]
+
+### Added
+- `woo_get_orders` accepts `product_id` (only orders containing that product or variation; matching line items are included automatically, plus a `summary` with order count, units and orders per status) and `include_items` (line items with quantity, total and options/add-ons, read from the order item meta, for every order).
+- `status` accepts several comma-separated statuses and `any`.
+
+### Fixed
+- `date_from` and `date_to` used together no longer override each other; they now form a range.
+
+## [1.2.1]
+
+### Changed
+- OAuth discovery no longer depends on the web server serving `/.well-known/`. The issuer is now `/wp-json/mcp/v1/oauth`; the protected-resource document is a REST route referenced by `resource_metadata` in the 401 `WWW-Authenticate` header, and the authorization-server metadata is served at `{issuer}/.well-known/openid-configuration` (also `.../oauth-authorization-server`), as MCP clients try for an issuer with a path. Hosts that reserve the root `/.well-known/` folder (e.g. for AutoSSL) no longer break the connector. The root `/.well-known/` handlers remain as an optional extra.
+- `authorization_endpoint` is built with `site_url()` and `/authorize` also matches under a language-directory prefix (WPML/Polylang).
+
+## [1.2.0]
+
+### Added
+- OAuth Protected Resource Metadata (RFC 9728) at `/.well-known/oauth-protected-resource`. Current MCP clients start OAuth discovery here; without it they cannot find the authorization server.
+- 401 responses now carry `resource_metadata="..."` in `WWW-Authenticate`, pointing at that document.
+- Refresh tokens (`grant_type=refresh_token`, rotated on each use, 30 day lifetime). Previously the connection dropped after the 1 hour access token expired.
+- `ping` method.
+
+### Changed
+- Discovery documents are now also served at path-aware URLs (`/.well-known/oauth-authorization-server/wp-json/mcp/v1/request`, etc.) and at `/.well-known/openid-configuration`, with CORS headers. Authorization server metadata now declares `refresh_token` and `token_endpoint_auth_methods_supported`.
+- `initialize` negotiates the protocol version (2025-06-18, 2025-03-26, 2024-11-05) instead of always answering 2024-11-05.
+- JSON-RPC notifications (`notifications/initialized`, etc.) now receive `202 Accepted` with an empty body instead of `200` with a bogus `{"id":null}` JSON-RPC object.
+- `GET`/`DELETE` on the MCP endpoint return `405` with `Allow: POST` instead of a `404 rest_no_route`.
+- JSON-RPC errors such as "method not found" are returned with HTTP 200 (only an invalid request envelope stays 400).
+- Dynamic Client Registration response includes `grant_types`, `response_types`, `token_endpoint_auth_method` and `client_id_issued_at`.
+- Expired access and refresh tokens are pruned when new ones are issued.
+
 ## [1.1.9]
 
 ### Fixed

@@ -3,7 +3,7 @@
  * Plugin Name:       WP MCP Server
  * Plugin URI:        https://thisfunctional.pt
  * Description:       Turns WordPress into an MCP server for AI assistants like Claude.
- * Version:           1.1.9
+ * Version:           1.3.0
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * Author:            this.functional
@@ -16,7 +16,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'WP_MCP_VERSION', '1.1.9' );
+define( 'WP_MCP_VERSION', '1.3.0' );
 define( 'WP_MCP_DIR', plugin_dir_path( __FILE__ ) );
 
 require_once WP_MCP_DIR . 'includes/class-mcp-logger.php';
@@ -30,24 +30,76 @@ require_once WP_MCP_DIR . 'admin/class-admin-settings.php';
 
 require_once WP_MCP_DIR . 'includes/oauth/class-oauth-server.php';
 
+
+/**
+ * OAuth discovery. The issuer deliberately lives under /wp-json/ so that discovery
+ * never depends on the web server serving anything from /.well-known/ (many hosts
+ * reserve that folder). Clients that follow RFC 8414 / the MCP spec request
+ * "{issuer}/.well-known/openid-configuration" for an issuer that has a path, and
+ * that URL is a normal REST route (see WP_MCP_OAuth_Server::register_routes).
+ */
+function wp_mcp_issuer(): string {
+    return untrailingslashit( rest_url( 'mcp/v1/oauth' ) );
+}
+
+function wp_mcp_resource_metadata_url(): string {
+    return rest_url( 'mcp/v1/oauth/protected-resource' );
+}
+
+function wp_mcp_protected_resource_metadata(): array {
+    return [
+        'resource'                 => rest_url( 'mcp/v1/request' ),
+        'authorization_servers'    => [ wp_mcp_issuer() ],
+        'bearer_methods_supported' => [ 'header' ],
+    ];
+}
+
+function wp_mcp_authorization_server_metadata(): array {
+    return [
+        'issuer'                                => wp_mcp_issuer(),
+        'authorization_endpoint'                => site_url( '/authorize' ),
+        'token_endpoint'                        => rest_url( 'mcp/v1/oauth/token' ),
+        'registration_endpoint'                 => rest_url( 'mcp/v1/oauth/register' ),
+        'response_types_supported'              => [ 'code' ],
+        'grant_types_supported'                 => [ 'authorization_code', 'refresh_token' ],
+        'code_challenge_methods_supported'      => [ 'S256' ],
+        'token_endpoint_auth_methods_supported' => [ 'none', 'client_secret_post', 'client_secret_basic' ],
+    ];
+}
+
 // The well-known endpoint must be registered HERE, at the top — not inside another hook.
 add_action( 'init', function () {
     $uri = parse_url( $_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH );
-    if ( $uri === '/.well-known/oauth-authorization-server' ) {
-        header( 'Content-Type: application/json' );
-        echo wp_json_encode( [
-            'issuer'                           => home_url(),
-            'authorization_endpoint'           => home_url( '/authorize' ),
-            'token_endpoint'                   => rest_url( 'mcp/v1/oauth/token' ),
-            'registration_endpoint'            => rest_url( 'mcp/v1/oauth/register' ),
-            'response_types_supported'         => [ 'code' ],
-            'grant_types_supported'            => [ 'authorization_code' ],
-            'code_challenge_methods_supported' => [ 'S256' ],
-        ] );
+    $uri = is_string( $uri ) ? untrailingslashit( $uri ) : '';
+
+    // Discovery documents. Clients request them at the bare path AND at the
+    // RFC 8414 / RFC 9728 path-aware form (".../<well-known-name>/wp-json/mcp/v1/request"),
+    // so match on the prefix instead of the exact path.
+    $meta = null;
+    if ( str_starts_with( $uri, '/.well-known/oauth-protected-resource' ) ) {
+        $meta = wp_mcp_protected_resource_metadata();
+    } elseif ( str_starts_with( $uri, '/.well-known/oauth-authorization-server' )
+        || str_starts_with( $uri, '/.well-known/openid-configuration' ) ) {
+        $meta = wp_mcp_authorization_server_metadata();
+    }
+
+    if ( null !== $meta ) {
+        if ( 'OPTIONS' === ( $_SERVER['REQUEST_METHOD'] ?? '' ) ) {
+            status_header( 204 );
+            header( 'Access-Control-Allow-Origin: *' );
+            header( 'Access-Control-Allow-Methods: GET, OPTIONS' );
+            header( 'Access-Control-Allow-Headers: Content-Type, MCP-Protocol-Version' );
+            exit;
+        }
+        status_header( 200 );
+        header( 'Content-Type: application/json; charset=utf-8' );
+        header( 'Access-Control-Allow-Origin: *' );
+        header( 'Cache-Control: no-store' );
+        echo wp_json_encode( $meta, JSON_UNESCAPED_SLASHES );
         exit;
     }
 
-    if ( $uri === '/authorize' ) {
+    if ( preg_match( '#^(/[a-z]{2}(-[a-z]{2,4})?)?/authorize$#i', $uri ) ) {
         $client_id             = sanitize_text_field( $_REQUEST['client_id'] ?? '' );
         $redirect_uri          = esc_url_raw( $_REQUEST['redirect_uri'] ?? '' );
         $state                 = sanitize_text_field( $_REQUEST['state'] ?? '' );

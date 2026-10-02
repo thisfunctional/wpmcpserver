@@ -5,6 +5,7 @@ class WP_MCP_OAuth_Server {
 
     private const CODE_TTL  = 600;  // 10 minutes
     private const TOKEN_TTL = 3600; // 1 hour
+    private const REFRESH_TTL = 2592000; // 30 days
     private const NONCE_ACTION = 'wp_mcp_oauth_authorize';
 
     public function init(): void {
@@ -12,6 +13,20 @@ class WP_MCP_OAuth_Server {
     }
 
     public function register_routes(): void {
+        // Discovery documents served from /wp-json/ (no /.well-known/ needed on the server).
+        register_rest_route( 'mcp/v1', '/oauth/protected-resource', [
+            'methods'             => 'GET',
+            'callback'            => fn() => $this->metadata_response( wp_mcp_protected_resource_metadata() ),
+            'permission_callback' => '__return_true',
+        ] );
+        foreach ( [ 'openid-configuration', 'oauth-authorization-server' ] as $doc ) {
+            register_rest_route( 'mcp/v1', '/oauth/\.well-known/' . $doc, [
+                'methods'             => 'GET',
+                'callback'            => fn() => $this->metadata_response( wp_mcp_authorization_server_metadata() ),
+                'permission_callback' => '__return_true',
+            ] );
+        }
+
         register_rest_route( 'mcp/v1', '/oauth/register', [
             'methods'             => WP_REST_Server::CREATABLE,
             'callback'            => [ $this, 'handle_register' ],
@@ -29,6 +44,13 @@ class WP_MCP_OAuth_Server {
             'callback'            => [ $this, 'handle_token' ],
             'permission_callback' => '__return_true',
         ] );
+    }
+
+    private function metadata_response( array $data ): WP_REST_Response {
+        $response = new WP_REST_Response( $data, 200 );
+        $response->header( 'Access-Control-Allow-Origin', '*' );
+        $response->header( 'Cache-Control', 'no-store' );
+        return $response;
     }
 
     /**
@@ -67,6 +89,11 @@ class WP_MCP_OAuth_Server {
             'client_secret' => $client_secret,
             'client_name'   => $clients[ $client_id ]['client_name'],
             'redirect_uris' => $redirect_uris,
+            'client_id_issued_at'        => time(),
+            'client_secret_expires_at'   => 0,
+            'grant_types'                => [ 'authorization_code', 'refresh_token' ],
+            'response_types'             => [ 'code' ],
+            'token_endpoint_auth_method' => 'client_secret_post',
         ], 201 );
     }
 
@@ -186,6 +213,10 @@ class WP_MCP_OAuth_Server {
             'client_secret' => $request->get_param( 'client_secret' ) ? '(present)' : '(absent)',
         ] );
 
+        if ( 'refresh_token' === $request->get_param( 'grant_type' ) ) {
+            return $this->handle_refresh( $request );
+        }
+
         if ( 'authorization_code' !== $request->get_param( 'grant_type' ) ) {
             WP_MCP_Logger::log( '[MCP OAuth Token] error: unsupported_grant_type' );
             return new WP_REST_Response( [ 'error' => 'unsupported_grant_type' ], 400 );
@@ -262,20 +293,91 @@ class WP_MCP_OAuth_Server {
             return new WP_REST_Response( [ 'error' => 'invalid_grant', 'error_description' => __( 'Invalid PKCE.', 'wp-mcp-server' ) ], 400 );
         }
 
-        $access_token             = wp_generate_password( 40, false );
-        $tokens                   = get_option( 'wp_mcp_oauth_tokens', [] );
-        $tokens[ $access_token ]  = time() + self::TOKEN_TTL;
-        update_option( 'wp_mcp_oauth_tokens', $tokens );
+        $issued = $this->issue_tokens( $client_id );
 
         WP_MCP_Logger::log( '[MCP OAuth Token] success', [
             'client_id'    => $client_id,
-            'token_prefix' => substr( $access_token, 0, 8 ),
+            'token_prefix' => substr( $issued['access_token'], 0, 8 ),
         ] );
 
-        return new WP_REST_Response( [
-            'access_token' => $access_token,
-            'token_type'   => 'Bearer',
-            'expires_in'   => self::TOKEN_TTL,
+        return $this->token_response( $issued );
+    }
+
+    /**
+     * Creates an access token + rotating refresh token, pruning expired entries.
+     */
+    private function issue_tokens( string $client_id ): array {
+        $now = time();
+
+        $access_token = wp_generate_password( 40, false );
+        $tokens       = array_filter( get_option( 'wp_mcp_oauth_tokens', [] ), fn( $exp ) => $exp > $now );
+        $tokens[ $access_token ] = $now + self::TOKEN_TTL;
+        update_option( 'wp_mcp_oauth_tokens', $tokens );
+
+        $refresh_token = wp_generate_password( 48, false );
+        $refresh       = array_filter( get_option( 'wp_mcp_oauth_refresh', [] ), fn( $r ) => ( $r['expires'] ?? 0 ) > $now );
+        $refresh[ $refresh_token ] = [ 'client_id' => $client_id, 'expires' => $now + self::REFRESH_TTL ];
+        update_option( 'wp_mcp_oauth_refresh', $refresh );
+
+        return [ 'access_token' => $access_token, 'refresh_token' => $refresh_token ];
+    }
+
+    private function token_response( array $issued ): WP_REST_Response {
+        $response = new WP_REST_Response( [
+            'access_token'  => $issued['access_token'],
+            'token_type'    => 'Bearer',
+            'expires_in'    => self::TOKEN_TTL,
+            'refresh_token' => $issued['refresh_token'],
         ], 200 );
+        $response->header( 'Cache-Control', 'no-store' );
+        $response->header( 'Pragma', 'no-cache' );
+        return $response;
+    }
+
+    /**
+     * grant_type=refresh_token — the refresh token is rotated on every use.
+     */
+    private function handle_refresh( WP_REST_Request $request ): WP_REST_Response {
+        $refresh_token = (string) $request->get_param( 'refresh_token' );
+        $client_id     = (string) $request->get_param( 'client_id' );
+        $client_secret = (string) $request->get_param( 'client_secret' );
+
+        if ( '' === $client_id ) {
+            $auth_header = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+            if ( str_starts_with( $auth_header, 'Basic ' ) ) {
+                $decoded = base64_decode( substr( $auth_header, 6 ), true );
+                if ( false !== $decoded && str_contains( $decoded, ':' ) ) {
+                    [ $client_id, $client_secret ] = explode( ':', $decoded, 2 );
+                }
+            }
+        }
+
+        $refresh = get_option( 'wp_mcp_oauth_refresh', [] );
+        $record  = $refresh[ $refresh_token ] ?? null;
+
+        if ( '' === $client_id && $record ) {
+            $client_id = $record['client_id'];
+        }
+
+        $clients = get_option( 'wp_mcp_oauth_clients', [] );
+        if ( ! isset( $clients[ $client_id ] )
+            || ( '' !== $client_secret && ! hash_equals( $clients[ $client_id ]['client_secret'], $client_secret ) )
+        ) {
+            WP_MCP_Logger::log( '[MCP OAuth Token] refresh error: invalid_client' );
+            return new WP_REST_Response( [ 'error' => 'invalid_client' ], 401 );
+        }
+
+        if ( ! $record || ( $record['expires'] ?? 0 ) < time() || ! hash_equals( $record['client_id'], $client_id ) ) {
+            WP_MCP_Logger::log( '[MCP OAuth Token] refresh error: invalid_grant' );
+            return new WP_REST_Response( [ 'error' => 'invalid_grant' ], 400 );
+        }
+
+        unset( $refresh[ $refresh_token ] ); // rotation: single use
+        update_option( 'wp_mcp_oauth_refresh', $refresh );
+
+        $issued = $this->issue_tokens( $client_id );
+        WP_MCP_Logger::log( '[MCP OAuth Token] refresh success', [ 'client_id' => $client_id ] );
+
+        return $this->token_response( $issued );
     }
 }

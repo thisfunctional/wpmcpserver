@@ -29,11 +29,13 @@ class WP_MCP_Module_WooCommerce {
 
         $router->register_tool(
             'woo_get_orders',
-            __( 'Lists WooCommerce orders with optional filters.', 'wp-mcp-server' ),
+            __( 'Lists WooCommerce orders with optional filters. Use product_id to list the orders that contain a given product (e.g. event tickets), with each line item and its options/add-ons.', 'wp-mcp-server' ),
             [
                 'type'       => 'object',
                 'properties' => [
-                    'status'    => [ 'type' => 'string', 'description' => __( 'Status: pending, processing, completed, cancelled, refunded', 'wp-mcp-server' ) ],
+                    'status'        => [ 'type' => 'string', 'description' => __( 'Status: pending, processing, completed, cancelled, refunded, on-hold, failed. Comma-separated for several, or "any".', 'wp-mcp-server' ) ],
+                    'product_id'    => [ 'type' => 'integer', 'description' => __( 'Only orders containing this product (or one of its variations). Line items are included automatically.', 'wp-mcp-server' ) ],
+                    'include_items' => [ 'type' => 'boolean', 'description' => __( 'Include line items (product, quantity, options/add-ons) for every order. Default: false.', 'wp-mcp-server' ), 'default' => false ],
                     'date_from' => [ 'type' => 'string', 'description' => __( 'Start date (YYYY-MM-DD)', 'wp-mcp-server' ) ],
                     'date_to'   => [ 'type' => 'string', 'description' => __( 'End date (YYYY-MM-DD)', 'wp-mcp-server' ) ],
                     'limit'     => [ 'type' => 'integer', 'description' => __( 'Maximum number of results (default: 20)', 'wp-mcp-server' ), 'default' => 20 ],
@@ -113,31 +115,84 @@ class WP_MCP_Module_WooCommerce {
             throw new Exception( __( 'WooCommerce is not installed or active.', 'wp-mcp-server' ) );
         }
 
+        $product_id    = (int) ( $args['product_id'] ?? 0 );
+        $include_items = $product_id > 0 || ! empty( $args['include_items'] );
+        $limit         = (int) ( $args['limit'] ?? 20 );
+
         $query_args = [
-            'limit'   => min( (int) ( $args['limit'] ?? 20 ), 100 ),
             'orderby' => 'date',
             'order'   => 'DESC',
+            // Filtering by product happens in PHP (WooCommerce has no native filter),
+            // so scan all matching orders (capped) and apply the limit afterwards.
+            'limit'   => $product_id > 0 ? 5000 : min( $limit, 100 ),
         ];
 
         if ( ! empty( $args['status'] ) ) {
-            $query_args['status'] = 'wc-' . sanitize_text_field( $args['status'] );
+            $status = sanitize_text_field( $args['status'] );
+            if ( 'any' === $status ) {
+                $query_args['status'] = array_keys( wc_get_order_statuses() );
+            } else {
+                $statuses = array_filter( array_map( 'trim', explode( ',', $status ) ) );
+                $query_args['status'] = array_map(
+                    fn( $st ) => str_starts_with( $st, 'wc-' ) ? $st : 'wc-' . $st,
+                    $statuses
+                );
+            }
         }
 
-        if ( ! empty( $args['date_from'] ) ) {
-            $query_args['date_created'] = '>=' . sanitize_text_field( $args['date_from'] );
+        $from = ! empty( $args['date_from'] ) ? sanitize_text_field( $args['date_from'] ) : '';
+        $to   = ! empty( $args['date_to'] ) ? sanitize_text_field( $args['date_to'] ) : '';
+        if ( $from && $to ) {
+            $query_args['date_created'] = $from . '...' . $to;
+        } elseif ( $from ) {
+            $query_args['date_created'] = '>=' . $from;
+        } elseif ( $to ) {
+            $query_args['date_created'] = '<=' . $to;
         }
 
-        if ( ! empty( $args['date_to'] ) ) {
-            $query_args['date_created'] = '<=' . sanitize_text_field( $args['date_to'] );
-        }
-
-        $orders = wc_get_orders( $query_args );
-        $result = [];
+        $orders      = wc_get_orders( $query_args );
+        $result      = [];
+        $units       = 0;
+        $by_status   = [];
+        $result_cap  = $product_id > 0 ? min( max( $limit, 1 ), 500 ) : PHP_INT_MAX;
 
         foreach ( $orders as $order ) {
             if ( ! $order instanceof WC_Order ) continue;
 
-            $result[] = [
+            $line_items = [];
+            $matched    = 0;
+            foreach ( $order->get_items() as $item ) {
+                if ( ! $item instanceof WC_Order_Item_Product ) continue;
+
+                $is_match = $product_id > 0
+                    && ( $item->get_product_id() === $product_id || $item->get_variation_id() === $product_id );
+                if ( $product_id > 0 && ! $is_match ) continue;
+
+                $matched += $item->get_quantity();
+
+                if ( $include_items ) {
+                    $options = [];
+                    foreach ( $item->get_formatted_meta_data( '_', true ) as $meta ) {
+                        $options[] = [
+                            'key'   => wp_strip_all_tags( $meta->display_key ),
+                            'value' => trim( wp_strip_all_tags( (string) $meta->display_value ) ),
+                        ];
+                    }
+                    $line_items[] = [
+                        'product_id'   => $item->get_product_id(),
+                        'variation_id' => $item->get_variation_id(),
+                        'name'         => $item->get_name(),
+                        'quantity'     => $item->get_quantity(),
+                        'total'        => $item->get_total(),
+                        'options'      => $options,
+                    ];
+                }
+            }
+
+            if ( $product_id > 0 && 0 === $matched ) continue;
+            if ( count( $result ) >= $result_cap ) break;
+
+            $row = [
                 'id'       => $order->get_id(),
                 'status'   => $order->get_status(),
                 'total'    => $order->get_total(),
@@ -147,9 +202,25 @@ class WP_MCP_Module_WooCommerce {
                 'date'     => $order->get_date_created()?->date( 'Y-m-d H:i:s' ),
                 'items'    => count( $order->get_items() ),
             ];
+            if ( $include_items ) {
+                $row['line_items'] = $line_items;
+            }
+            $result[] = $row;
+
+            $by_status[ $row['status'] ] = ( $by_status[ $row['status'] ] ?? 0 ) + 1;
+            $units                      += $matched;
         }
 
-        return [ 'orders' => $result ];
+        $out = [ 'orders' => $result ];
+        if ( $product_id > 0 ) {
+            $out['summary'] = [
+                'product_id'      => $product_id,
+                'orders'          => count( $result ),
+                'units'           => $units,
+                'orders_by_status' => $by_status,
+            ];
+        }
+        return $out;
     }
 
     public function get_revenue( array $args ): array {

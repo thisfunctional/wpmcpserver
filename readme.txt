@@ -5,7 +5,7 @@ Tags: mcp, ai, claude, rest-api, woocommerce
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 1.1.9
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,18 @@ Yes. HTTPS is required for OAuth redirects and for Claude to trust the connector
 
 == Changelog ==
 
+= 1.3.0 =
+* Added: `woo_get_orders` can filter by `product_id` and return line items with their options/add-ons (`include_items`); `status` accepts several values or `any`.
+* Fixed: `date_from` + `date_to` together now form a range.
+
+= 1.2.1 =
+* Changed: OAuth discovery now works without the web server serving `/.well-known/` (issuer and metadata live under `/wp-json/mcp/v1/oauth`).
+
+= 1.2.0 =
+* Added: OAuth Protected Resource Metadata (RFC 9728) at `/.well-known/oauth-protected-resource`, and `resource_metadata` in the 401 `WWW-Authenticate` header, as required by current MCP clients.
+* Added: refresh tokens (rotating, 30 days) so connections no longer drop after one hour; `ping` method.
+* Changed: protocol version negotiation on `initialize`; notifications answered with an empty `202`; GET/DELETE on the endpoint return `405`; discovery documents also served at path-aware URLs.
+
 = 1.1.9 =
 * Fixed: `woo_get_orders` could fatal when `wc_get_orders()` returned a `WC_Order_Refund` object (which doesn't implement the billing/customer methods used to build each row). The loop now skips any result that isn't an instance of `WC_Order`.
 
@@ -115,6 +127,15 @@ Yes. HTTPS is required for OAuth redirects and for Claude to trust the connector
 * Full internationalization support (wp-mcp-server text domain, .pot translation template)
 
 == Upgrade Notice ==
+
+= 1.3.0 =
+Orders can now be listed per product with their add-on options. Customer names and emails are returned with more detail.
+
+= 1.2.1 =
+Fixes connector setup on hosts that block or reserve `/.well-known/`. Remove and re-add the connector after updating.
+
+= 1.2.0 =
+Required for current Claude connectors: adds OAuth protected-resource discovery, refresh tokens and MCP protocol negotiation. After updating, remove and re-add the connector.
 
 = 1.1.9 =
 Fixes a potential fatal in woo_get_orders when a WC_Order_Refund object appears in the results.
