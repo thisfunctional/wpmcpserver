@@ -37,10 +37,13 @@ WP MCP Server turns any WordPress site into an [MCP (Model Context Protocol)](ht
 
 This flow relies on WordPress's [OAuth 2.0 Dynamic Client Registration](https://www.rfc-editor.org/rfc/rfc7591), backed by:
 
-- `/.well-known/oauth-authorization-server` — discovery document
+- `/wp-json/mcp/v1/oauth/protected-resource` — protected resource metadata (RFC 9728), referenced by `resource_metadata` in the `401` `WWW-Authenticate` header
+- `/wp-json/mcp/v1/oauth/.well-known/openid-configuration` — authorization server metadata for the issuer `/wp-json/mcp/v1/oauth`
 - `/wp-json/mcp/v1/oauth/register` — dynamic client registration
 - `/authorize` — the authorization/consent screen (must be logged in as a user with `manage_options`)
-- `/wp-json/mcp/v1/oauth/token` — token exchange (authorization_code + PKCE)
+- `/wp-json/mcp/v1/oauth/token` — token exchange (authorization_code + PKCE) and refresh tokens
+
+Discovery lives under `/wp-json/` on purpose, so it works on hosts that reserve or block the root `/.well-known/` folder. The root `/.well-known/oauth-protected-resource` and `/.well-known/oauth-authorization-server` URLs are also served when the host lets them through.
 
 **If Claude reports a connection error**, the settings page shows a fallback: a pre-generated **Client ID** and **Client Secret** you can paste manually into Claude's "Add an OAuth Client ID" option.
 
@@ -63,7 +66,7 @@ This flow relies on WordPress's [OAuth 2.0 Dynamic Client Registration](https://
 | Tool | Description |
 |---|---|
 | `woo_get_products` | List or search products |
-| `woo_get_orders` | List orders with optional status/date filters |
+| `woo_get_orders` | List orders with optional status/date filters. `product_id` returns only orders containing that product, with line items and their options/add-ons; `include_items` adds line items to every order |
 | `woo_get_revenue` | Revenue summary for a date range |
 | `woo_low_stock` | Products with low or no stock |
 
